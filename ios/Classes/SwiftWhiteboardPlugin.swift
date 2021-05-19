@@ -1,11 +1,9 @@
 import Flutter
 import UIKit
 
-public class SwiftWhiteboardPlugin: NSObject, FlutterPlugin {
+public class SwiftWhiteboardPlugin: NSObject, FlutterPlugin,FLTPigeonApi {
   public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(name: "whiteboard", binaryMessenger: registrar.messenger())
-    let instance = SwiftWhiteboardPlugin()
-    registrar.addMethodCallDelegate(instance, channel: channel)
+    FLTPigeonApiSetup(registrar.messenger(), SwiftWhiteboardPlugin.init());
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {

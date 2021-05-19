@@ -31,7 +31,9 @@ android {
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
-
+    configurations {
+        implementation.exclude group: 'org.jetbrains', module: 'annotations'
+    }
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.bond.whiteboard_example"

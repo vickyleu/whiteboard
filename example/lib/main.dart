@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:whiteboard/UserSigGenerate.dart';
 import 'package:whiteboard/whiteboard.dart';
 
 void main() {
@@ -9,37 +10,43 @@ void main() {
 }
 
 class MyApp extends StatefulWidget {
+  WhiteboardController _whiteboardController=WhiteboardController();
+  MyApp(){
+    final secret="f31f05a9292434dd66ff368eed72647029daca9e9237fec99aa6669904d8d117";
+    final appid=1400501664;
+    final userId="1008611";
+    _register(appid, secret, userId);
+  }
+  Future _register(int appid, String secret, String userId) async {
+
+    if(!_whiteboardController.isInit()){
+      _whiteboardController.addCreatedListener(_created);
+      _whiteboardController.init(appid).then((value) async {
+        if(value.code==1){
+          final userSig=await UserSigGenerate.genTestSig(appid,secret,userId);
+          _whiteboardController.login(userId,userSig).then((value){
+            if(value.code==1){
+              _created();
+            }
+          });
+        }
+      });
+    }
+  }
+  _created(){
+    if(_whiteboardController.isLogin()){
+      _whiteboardController.joinClass();
+    }
+  }
   @override
   _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
 
   @override
   void initState() {
     super.initState();
-    initPlatformState();
-  }
-
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    String platformVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    try {
-      platformVersion = await Whiteboard.platformVersion;
-    } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
-    }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    setState(() {
-      _platformVersion = platformVersion;
-    });
   }
 
   @override
@@ -50,7 +57,9 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+          child: Whiteboard(
+            controller: widget._whiteboardController,
+          ),
         ),
       ),
     );

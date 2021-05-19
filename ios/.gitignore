@@ -2,7 +2,9 @@
 .vagrant/
 .sconsign.dblite
 .svn/
-
+Podfile*
+whiteboard.xc*
+Pods
 .DS_Store
 *.swp
 profile
