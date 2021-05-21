@@ -18,6 +18,7 @@ A new Flutter plugin project for tencent whiteboard.
   s.platform = :ios, '8.0'
   # 默认集成全部第三方 SDK
   s.dependency 'TEduBoard_iOS', '2.6.0.39'
+  s.dependency 'Masonry', '1.1.0'
   s.dependency 'TIWLogger_iOS','1.0.1.21'
   s.dependency 'TXIMSDK_iOS','4.6.101'
   s.dependency 'TXLiteAVSDK_TRTC','8.3.9884'

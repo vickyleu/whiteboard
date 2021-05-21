@@ -7,6 +7,7 @@
 
 import Foundation
 import Flutter
+import Masonry
 
 public class WhiteboardViewFactory : NSObject, FlutterPlatformViewFactory,NativeViewLink {
     
@@ -30,8 +31,18 @@ public class WhiteboardViewFactory : NSObject, FlutterPlatformViewFactory,Native
     
     
     func addView(_ view: UIView) {
+        guard let root = nativeViewContainer?.rootView else {
+            return
+        }
         view.backgroundColor = UIColor.red
-        nativeViewContainer?.rootView.addSubview(view)
+        root.addSubview(view)
+        
+        view.mas_makeConstraints({ (make) in
+            make?.top.equalTo()(root)
+            make?.left.equalTo()(root)
+            make?.right.equalTo()(root)
+            make?.bottom.equalTo()(root)
+        })
     }
     
     func removeView(_ view: UIView) {
