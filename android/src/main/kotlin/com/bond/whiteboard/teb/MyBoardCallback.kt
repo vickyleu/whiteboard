@@ -113,6 +113,6 @@ class MyBoardCallback(var boardAwareCallback: BoardAwareInterface) : TEduBoardCa
     }
 
     companion object {
-        private const val TAG = "TICClassMainActivity"
+        private const val TAG = "MyBoardCallback"
     }
 }

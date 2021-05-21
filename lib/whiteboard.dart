@@ -89,7 +89,7 @@ class WhiteboardController {//extends Listener
   PigeonFlutterApi _pigeonFlutterApi;
   Future<DataModel> init(int appID){
     WidgetsFlutterBinding.ensureInitialized();///先调用这一句
-    return api.init(InitRequest()..appID=appID).then((value){
+    return api.pinit(InitRequest()..appID=appID).then((value){
       if(value.code==-1){
         print("login # ${value.msg}");
       }else{

@@ -26,7 +26,7 @@ class JoinClassRequest {
 // 需要实现的api
 @HostApi()
 abstract class PigeonApi {
-  DataModel init(InitRequest params);
+  DataModel pinit(InitRequest params);
   @async
   DataModel login(LoginRequest params);
   @async
@@ -45,8 +45,8 @@ abstract class PigeonFlutterApi {
 // 输出配置
 void configurePigeon(PigeonOptions opts) {
   opts.dartOut = './lib/pigeon/PigeonPlatformMessage.dart';
-  opts.objcHeaderOut = 'ios/Classes/pigeon/PigeonPlatformMessage.h';
-  opts.objcSourceOut = 'ios/Classes/pigeon/PigeonPlatformMessage.m';
+  opts.objcHeaderOut = 'ios/pigeon/PigeonPlatformMessage.h';
+  opts.objcSourceOut = 'ios/pigeon/PigeonPlatformMessage.m';
   opts.objcOptions.prefix = 'FLT';
   opts.dartOptions.isNullSafe=false;
   opts.javaOut = 'android/src/main/kotlin/com/pigeon/PigeonPlatformMessage.java';

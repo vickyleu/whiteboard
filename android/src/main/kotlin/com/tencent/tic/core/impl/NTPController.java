@@ -3,7 +3,7 @@ package com.tencent.tic.core.impl;
 import android.os.Handler;
 import android.text.TextUtils;
 
-import com.instacart.library.truetime.TrueTime;
+import com.tencent.instacart.library.truetime.TrueTime;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;

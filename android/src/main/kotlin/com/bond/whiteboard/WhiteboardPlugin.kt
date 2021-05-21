@@ -21,7 +21,7 @@ class WhiteboardPlugin: FlutterPlugin,ActivityAware {
   private var activityAware:ActivityPluginBinding?=null
 
   private val api = object :PigeonPlatformMessage.PigeonApi{
-    override fun init(arg: PigeonPlatformMessage.InitRequest?): PigeonPlatformMessage.DataModel {
+    override fun pinit(arg: PigeonPlatformMessage.InitRequest?): PigeonPlatformMessage.DataModel {
       val context = activityAware?.activity?.application?.applicationContext
       return if(context!=null&&arg!=null){
         awareManager.init(context,arg.appID.toInt())

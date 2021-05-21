@@ -2,7 +2,7 @@ package com.tencent.tic.core.impl;
 
 import android.text.TextUtils;
 
-import com.instacart.library.truetime.TrueTime;
+import com.tencent.instacart.library.truetime.TrueTime;
 import com.tencent.liteav.basic.log.TXCLog;
 import com.tencent.liteav.basic.util.TXCTimeUtil;
 import com.tencent.teduboard.TEduBoardController;
