@@ -25,7 +25,7 @@ class JoinClassRequest {
 
 ///操作请求
 ///这里是希望通过纯文本的形式发送方法和参数命令,然后在原生语言中通过反射执行预定义的方法,swift项目通过调用OC的方法执行反射,kotlin正常操作
-///或者是通过各自定义一组枚举值,需要保证三端枚举值完全一致,然后手动在原生中执行各种方法,pigeon不能导出枚举,我他妈不是很想这么写
+///或者是通过各自定义一组枚举值,需要保证三端枚举值完全一致,然后手动在原生中执行各种方法,pigeon不能导出枚举,TODO 我他妈不是很想这么写
 class CommandRequest{
   String commandMethod;
   List<String> args;
