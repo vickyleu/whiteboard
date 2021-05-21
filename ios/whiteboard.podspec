@@ -16,12 +16,15 @@ A new Flutter plugin project for tencent whiteboard.
   s.source_files = 'Classes/**/*','pigeon/**/*','tencent/**/*'
   s.dependency 'Flutter'
   s.platform = :ios, '8.0'
-  s.dependency = 'TEduBoard_iOS', :podspec => 'https://sdk.qcloudtiw.com/ios/spec/TEduBoard_iOS.podspec'
+  # 默认集成全部第三方 SDK
+  s.dependency 'TEduBoard_iOS', '2.6.0.39'
   s.dependency 'TIWLogger_iOS','1.0.1.21'
   s.dependency 'TXIMSDK_iOS','4.6.101'
   s.dependency 'TXLiteAVSDK_TRTC','8.3.9884'
+  s.frameworks = "Accelerate"
+  s.static_framework = true
   # Flutter.framework does not contain a i386 slice.
-  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
-  s.user_target_xcconfig = { 'ENABLE_BITCODE' => 'NO' }
+  s.pod_target_xcconfig  = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
+  s.user_target_xcconfig = { 'ENABLE_BITCODE' => 'NO' , 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386'  }
   s.swift_version = '5.0'
 end

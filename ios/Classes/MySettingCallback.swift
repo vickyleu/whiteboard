@@ -58,12 +58,13 @@ internal class  MySettingCallback : NSObject,IMoreListener {
     }
     
     func onTipTextInput(textContent: String) {
-        let titleStyle = TEduBoardToolTypeTitleStyle()
+//        let snapshotInfo = TEduBoardSnapshotInfo() ///这个和TEduBoardToolTypeTitleStyle是同一个头文件中的类定义
+        let titleStyle = TEduBoardToolTypeTitleStyle() ///注释掉这句就行
         titleStyle.color = UIColor.init(hex: "#FF0000")
         titleStyle.size = 1000
         titleStyle.style = TEduBoardTextStyle.TEDU_BOARD_TEXT_STYLE_BOLD_ITALIC
         titleStyle.position = TEduBoardPosition.TEDU_BOARD_POSITION_RIGHT_TOP
-        awareManager?.boardAware?.mBoard?.setToolTypeTitle(textContent, style:titleStyle)
+        awareManager?.boardAware?.mBoard?.setToolTypeTitle(textContent, style:nil)
     }
     
     func onWipeNumInput(num: Int) {
