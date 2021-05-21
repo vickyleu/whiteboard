@@ -3,7 +3,10 @@
 //
 
 import Foundation
+import Masonry
+
+
 protocol NativeViewLink {
-    func addView(_ view: UIView)
+    func addView(_ view: UIView,layoutParam:(UIView, MASConstraintMaker?) -> ())
     func removeView(_ view: UIView)
 }

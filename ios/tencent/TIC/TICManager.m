@@ -87,6 +87,7 @@ id makeWeakRef (id object) {
         userConfig.groupEventListener = self;
         userConfig.disableAutoReport = NO;
         [[TIMManager sharedInstance] setUserConfig:userConfig];
+        
     }
     TICBLOCK_SAFE_RUN(callback, TICMODULE_IMSDK, ret, nil);
 }
@@ -174,6 +175,9 @@ id makeWeakRef (id object) {
         TICBLOCK_SAFE_RUN(callback, TICMODULE_IMSDK, code, msg);
     }];
 }
+
+
+
 
 - (void)joinClassroom:(TICClassroomOption *)option callback:(TICCallback)callback
 {

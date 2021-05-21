@@ -34,7 +34,9 @@ class MyApp extends StatefulWidget {
     }
   }
   _created(){
+    print("value.isLogin==>${_whiteboardController.isLogin()}  #");
     if(_whiteboardController.isLogin()){
+      print("value.isLogin=joinClass=>${_whiteboardController.isLogin()}  #");
       _whiteboardController.joinClass();
     }
   }

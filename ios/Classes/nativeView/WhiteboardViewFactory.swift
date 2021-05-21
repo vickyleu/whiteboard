@@ -30,19 +30,17 @@ public class WhiteboardViewFactory : NSObject, FlutterPlatformViewFactory,Native
     }
     
     
-    func addView(_ view: UIView) {
+    func addView(_ view: UIView,layoutParam:(UIView, MASConstraintMaker?) -> ()) {
+        print("onTeb给点响应啊,妈的  addView:\(0)")
         guard let root = nativeViewContainer?.rootView else {
             return
         }
+       
         view.backgroundColor = UIColor.red
         root.addSubview(view)
-        
-        view.mas_makeConstraints({ (make) in
-            make?.top.equalTo()(root)
-            make?.left.equalTo()(root)
-            make?.right.equalTo()(root)
-            make?.bottom.equalTo()(root)
-        })
+        view.mas_makeConstraints { (make) in
+            layoutParam(root,make)
+        }
     }
     
     func removeView(_ view: UIView) {

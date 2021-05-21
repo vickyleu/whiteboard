@@ -3,9 +3,11 @@ import UIKit
 
 public class SwiftWhiteboardPlugin: NSObject, FlutterPlugin,FLTPigeonApi {
     public static func register(with registrar: FlutterPluginRegistrar) {
-        registrar.register(WhiteboardViewFactory.init(),
-                           withId: "plugins.whiteboard/_001")
-        FLTPigeonApiSetup(registrar.messenger(), SwiftWhiteboardPlugin.init());
+        let boardFactory = WhiteboardViewFactory.init()
+        let plugin = SwiftWhiteboardPlugin.init()
+        registrar.register(boardFactory, withId: "plugins.whiteboard/_001")
+        FLTPigeonApiSetup(registrar.messenger(), plugin);
+        plugin.awareManager.nativeViewLink=boardFactory
     }
     
     let  awareManager = AwareManager()

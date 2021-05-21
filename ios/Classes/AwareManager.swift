@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Masonry
 
 public class AwareManager : NSObject, BoardAwareInterface{
     
@@ -38,27 +39,39 @@ public class AwareManager : NSObject, BoardAwareInterface{
     }
     
     func joinClass(_ classroomOption:TICClassroomOption,ticCallback: @escaping TICCallback) {
+        
         boardAware?.destroy()
         rtcAware?.destroy()
         boardAware=BoardAware()
         rtcAware = RtcAware(mTicManager?.getTRTCCloud())
         rtcAware?.initRTC()
         //2.白板
-        guard let boardController =  mTicManager?.getBoardController() else { return }
-        boardAware?.mBoard = boardController
+
         //1、设置白板的回调
-        boardAware?.mBoardCallback = MyBoardCallback(self)
-        classroomOption.boardDelegate = boardAware?.mBoardCallback
+        let mbcallback = MyBoardCallback(self)
+        self.boardAware?.mBoardCallback = mbcallback
+        classroomOption.boardDelegate = mbcallback
+
+        let cb : TICCallback =  { module , code , desc  in
+            guard let boardController =  self.mTicManager?.getBoardController() else {
+                ticCallback(module,-1, "白板初始化不成功")
+                return
+            }
+            self.boardAware?.mBoard = boardController
+            mbcallback.onTEBInit() ///腾讯的Android和iOS回调不同步,这里手动调用,保证在业务层处理逻辑是一样的.反正回调中我会判断画板是否已经准备就绪的
+            ticCallback(module,code,desc)
+        }
+
         mTicManager?.createClassroom(Int32(classroomOption.classId), classScene: classroomOption.classScene){ (module, errCode, errMsg) in
             if(errCode == 0){
                 print("创建课堂 成功, 房间号：\(classroomOption.classId)")
-                self.mTicManager?.joinClassroom(classroomOption, callback:ticCallback)
+                self.mTicManager?.joinClassroom(classroomOption, callback:cb)
             }else if(errCode == 10021){
                 print("该课堂已被他人创建，请\"加入课堂\"")
-                self.mTicManager?.joinClassroom(classroomOption,  callback:ticCallback)
+                self.mTicManager?.joinClassroom(classroomOption,  callback:cb)
             }else if (errCode == 10025) {
                 print("该课堂已创建，请\"加入课堂\"")
-                self.mTicManager?.joinClassroom(classroomOption,  callback:ticCallback)
+                self.mTicManager?.joinClassroom(classroomOption,  callback:cb)
             } else {
                 let msg="创建课堂失败, 房间号：\(classroomOption.classId) errCode:\(errCode) msg:\(errMsg)"
                 print(msg)
@@ -82,7 +95,13 @@ public class AwareManager : NSObject, BoardAwareInterface{
     
     func addBoardView() {
         guard let boardView = boardAware?.mBoard?.getBoardRenderView() else { return }
-        nativeViewLink?.addView(boardView)
+        print("onTeb给点响应啊,妈的  nativeViewLink:\(nativeViewLink)")
+        nativeViewLink?.addView(boardView) { (root: UIView, make: MASConstraintMaker?) in
+            make?.top.equalTo()(root)
+            make?.left.equalTo()(root)
+            make?.right.equalTo()(root)
+            make?.bottom.equalTo()(root)
+        }
     }
     
     func removeBoardView() {

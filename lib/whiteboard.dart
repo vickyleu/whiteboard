@@ -91,14 +91,14 @@ class WhiteboardController {//extends Listener
     WidgetsFlutterBinding.ensureInitialized();///先调用这一句
     return api.pinit(InitRequest()..appID=appID).then((value){
       if(value.code==-1){
-        print("login # ${value.msg}");
+        print("init # ${value.msg}");
       }else{
-        print("login # 初始化成功");
+        print("init # 初始化成功");
         _isInit=true;
       }
       return value;
     }).catchError((onError){
-      print("login # ${onError.message.toString()}");
+      print("init # ${onError.message.toString()}");
       return null;
     });
   }
@@ -111,7 +111,7 @@ class WhiteboardController {//extends Listener
       if(value.code==-1){
         print("login # ${value.msg}");
       }else{
-        print("login # 初始化成功");
+        print("login # 登录成功");
         _isLogin=true;
       }
       return value;
@@ -122,7 +122,16 @@ class WhiteboardController {//extends Listener
 
 
   Future<DataModel> joinClass() {
-    api.joinClass(JoinClassRequest()..roomId=123);
+    api.joinClass(JoinClassRequest()..roomId=123).then((value){
+      if(value.code==-1){
+        print("joinClass # ${value.msg}");
+      }else{
+        print("joinClass # 进入教室成功");
+      }
+      return value;
+    }).catchError((onError){
+      print("joinClass # ${onError.message.toString()}");
+    });
   }
 
   bool isInit(){
