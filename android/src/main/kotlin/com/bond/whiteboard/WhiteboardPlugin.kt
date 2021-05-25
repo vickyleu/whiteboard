@@ -6,8 +6,8 @@ import com.pigeon.PigeonPlatformMessage
 import com.pigeon.PigeonPlatformMessage.PigeonApi.setup
 import com.tencent.teduboard.TEduBoardController.TEduBoardColor
 import com.tencent.teduboard.TEduBoardController.TEduBoardInitParam
+import com.tencent.tic.core.TICCallback
 import com.tencent.tic.core.TICClassroomOption
-import com.tencent.tic.core.TICManager.TICCallback
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -20,7 +20,7 @@ class WhiteboardPlugin: FlutterPlugin,ActivityAware {
 
   private var activityAware:ActivityPluginBinding?=null
 
-  private val api = object :PigeonPlatformMessage.PigeonApi{
+  private val api = object : PigeonPlatformMessage.PigeonApi{
     override fun pinit(arg: PigeonPlatformMessage.InitRequest?): PigeonPlatformMessage.DataModel {
       val context = activityAware?.activity?.application?.applicationContext
       return if(context!=null&&arg!=null){
@@ -38,14 +38,14 @@ class WhiteboardPlugin: FlutterPlugin,ActivityAware {
     }
     override fun login(arg: PigeonPlatformMessage.LoginRequest?, result: PigeonPlatformMessage.Result<PigeonPlatformMessage.DataModel>?) {
       if(arg!=null){
-        awareManager.login(arg.userID,arg.userSig, object : TICCallback<Any?> {
+        awareManager.login(arg.userID,arg.userSig, object : TICCallback<Any> {
           override fun onError(module: String, errCode: Int, errMsg: String) {
             result?.success(PigeonPlatformMessage.DataModel().apply {
               this.code=-1
               this.msg="${arg.userID}:登录失败,$errMsg"
             })
           }
-          override fun onSuccess(data: Any?) {
+          override fun onSuccess(data: Any) {
             result?.success(PigeonPlatformMessage.DataModel().apply {
               this.code=1
               this.msg="${arg.userID}:登录成功"
@@ -69,8 +69,8 @@ class WhiteboardPlugin: FlutterPlugin,ActivityAware {
         val classroomOption = TICClassroomOption()
         classroomOption.classId = arg.roomId.toInt()
         classroomOption.boardInitPara = initParam
-        awareManager.joinClassroom(classroomOption, object : TICCallback<Any?> {
-          override fun onSuccess(data: Any?) {
+        awareManager.joinClassroom(classroomOption, object : TICCallback<Any> {
+          override fun onSuccess(data: Any) {
             result?.success(PigeonPlatformMessage.DataModel().apply {
               this.code= 1
               this.msg="进入课堂成功:${arg.roomId.toInt()}"
@@ -101,14 +101,14 @@ class WhiteboardPlugin: FlutterPlugin,ActivityAware {
     override fun quitClass(result: PigeonPlatformMessage.Result<PigeonPlatformMessage.DataModel>?) {
       //如果是老师，可以清除；
       //如查是学生一般是不要清除数据
-      awareManager.quitClassroom(true, object : TICCallback<Any?> {
+      awareManager.quitClassroom(true, object : TICCallback<Any> {
         override fun onError(module: String, errCode: Int, errMsg: String) {
           result?.success(PigeonPlatformMessage.DataModel().apply {
             this.code= -1
             this.msg="退出课堂失败,$errMsg"
           })
         }
-        override fun onSuccess(data: Any?) {
+        override fun onSuccess(data: Any) {
           result?.success(PigeonPlatformMessage.DataModel().apply {
             this.code= 1
             this.msg="退出课堂成功"
@@ -116,13 +116,20 @@ class WhiteboardPlugin: FlutterPlugin,ActivityAware {
         }
       })
     }
+
+    override fun sendCommand(
+      arg: PigeonPlatformMessage.CommandRequest?,
+      result: PigeonPlatformMessage.Result<PigeonPlatformMessage.DataModel>?
+    ) {
+      ///
+    }
   }
 
 
   override fun onAttachedToEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
     setup(binding.binaryMessenger,api)
     binding.platformViewRegistry.registerViewFactory("plugins.whiteboard/_001", boardFactory)
-    val flutterApi =PigeonPlatformMessage.PigeonFlutterApi(binding.binaryMessenger)
+    val flutterApi = PigeonPlatformMessage.PigeonFlutterApi(binding.binaryMessenger)
     awareManager.flutterApi=flutterApi
     awareManager.nativeViewLink=boardFactory
   }

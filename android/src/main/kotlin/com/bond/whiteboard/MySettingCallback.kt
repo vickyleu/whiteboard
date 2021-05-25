@@ -128,7 +128,7 @@ internal class MySettingCallback : IMoreListener {
     override fun onUndo() {
         val board = awareManager?.boardAware?:return
         if(_canUndo)
-        board.mBoard?.undo()
+            board.mBoard?.undo()
     }
 
     override fun onRedo() {
@@ -253,7 +253,7 @@ internal class MySettingCallback : IMoreListener {
         _canRedo=canredo
     }
 }
-interface IMoreListener {
+private interface IMoreListener {
     //TRTC
     fun onEnableAudio(bEnableAudio: Boolean)
     fun onSwitchAudioRoute(speaker: Boolean)

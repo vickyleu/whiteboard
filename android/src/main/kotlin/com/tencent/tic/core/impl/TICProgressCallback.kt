@@ -1,24 +1,22 @@
-package com.tencent.tic.core.impl;
+package com.tencent.tic.core.impl
 
 /**
  * Created by eric on 2018/4/3.
  */
-
-public interface TICProgressCallback<T> {
-
+interface TICProgressCallback<T> {
     /**
      * 进度
      *
      * @param percent 百分比
      */
-    void onPrgress(int percent);
+    fun onPrgress(percent: Int)
 
     /**
      * 操作成功
      *
      * @param data 成功返回值
      */
-    void onSuccess(T data);
+    fun onSuccess(data: T)
 
     /**
      * 操作失败
@@ -27,5 +25,5 @@ public interface TICProgressCallback<T> {
      * @param errCode 错误码
      * @param errMsg  错误描述
      */
-    void onError(String module, int errCode, String errMsg);
+    fun onError(module: String?, errCode: Int, errMsg: String?)
 }
