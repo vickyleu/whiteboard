@@ -1,5 +1,6 @@
 // @dart=2.9
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -78,51 +79,36 @@ class _WhiteboardState extends State<Whiteboard>{
   }
 }
 
+typedef Future<void> ExitRoom(DataModel arg);
+typedef Future<DataModel> ReceiveData(ReceivedData arg);
+class PigeonFlutterApiImpl extends PigeonFlutterApi {
+  ExitRoom exitRoomCallback;
+  ReceiveData receiveDataCallback;
+  PigeonFlutterApiImpl({@required this.exitRoomCallback,@required this.receiveDataCallback});
+  @override
+  Future<void> exitRoom(DataModel arg) {
+    return exitRoomCallback?.call(arg);
+  }
+
+  @override
+  Future<DataModel> receiveData(ReceivedData arg) {
+    print("mother fucker receiveData ${arg?.data}");
+    final model = receiveDataCallback?.call(arg);
+    return (model!=null)?model:DataModel.decode({"code":-1,"msg":"参数错误"});
+  }
+}
+
+
 class WhiteboardController {//extends Listener
   PigeonApi api =  PigeonApi();
 
   Set<Function>_createdListener=Set();
-  bool _isInit=false;
-  bool _isLogin=false;
   bool _isCreated=false;
   _WhiteboardState _state;
   PigeonFlutterApi _pigeonFlutterApi;
-  Future<DataModel> init(int appID){
-    WidgetsFlutterBinding.ensureInitialized();///先调用这一句
-    return api.pinit(InitRequest()..appID=appID).then((value){
-      if(value.code==-1){
-        print("init # ${value.msg}");
-      }else{
-        print("init # 初始化成功");
-        _isInit=true;
-      }
-      return value;
-    }).catchError((onError){
-      print("init # ${onError.message.toString()}");
-      return null;
-    });
-  }
 
-  Future<DataModel> login(String userID,String userSig) {
-    return api.login(LoginRequest()
-      ..userID=userID
-      ..userSig=userSig
-    ).then((value){
-      if(value.code==-1){
-        print("login # ${value.msg}");
-      }else{
-        print("login # 登录成功");
-        _isLogin=true;
-      }
-      return value;
-    }).catchError((onError){
-      print("login # ${onError.message.toString()}");
-    });
-  }
-
-
-  Future<DataModel> joinClass() {
-    api.joinClass(JoinClassRequest()..roomId=123).then((value){
+  Future<DataModel> joinClass(int classId) {
+    return api.joinClass(JoinClassRequest()..roomId=classId).then((value){
       if(value.code==-1){
         print("joinClass # ${value.msg}");
       }else{
@@ -133,17 +119,30 @@ class WhiteboardController {//extends Listener
       print("joinClass # ${onError.message.toString()}");
     });
   }
-
-  bool isInit(){
-    return _isInit;
+  Future<DataModel> preJoinClass(int appid, String userId, String userSig) {
+    return api.preJoinClass(
+        PreJoinClassRequest()
+          ..appId=appid
+          ..userId=userId
+          ..userSig=userSig
+    ).then((value){
+      if(value.code==-1){
+        print("preJoinClass # ${value.msg}");
+      }else{
+        print("preJoinClass # 初始化教室成功");
+      }
+      return value;
+    }).catchError((onError){
+      print("preJoinClass # ${onError.message.toString()}");
+    });
   }
+
   bool isCreated(){
     return _isCreated;
   }
-  bool isLogin(){
-    return _isInit&&_isLogin;
-  }
+
   void _initCallbackHandler(){
+    assert(_pigeonFlutterApi!=null,"必须先调用addPigeonApiListener以初始化信令通道");
     PigeonFlutterApi.setup(_pigeonFlutterApi);
   }
 
@@ -152,9 +151,7 @@ class WhiteboardController {//extends Listener
   }
 
   void dispose() {
-    // _pigeonFlutterApi=null;
-    _isInit=false;
-    _isLogin=false;
+    _pigeonFlutterApi=null;
     _isCreated=false;
     PigeonFlutterApi.setup(null);
     _state=null;
@@ -169,6 +166,10 @@ class WhiteboardController {//extends Listener
 
   void addCreatedListener(Function() created) {
     _createdListener.add(created);
+  }
+
+  void receiveMsg(Uint8List msg) {
+    api.receiveData(ReceivedData()..data=msg);
   }
 
 

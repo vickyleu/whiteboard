@@ -1,5 +1,6 @@
 // @dart=2.9
 import 'package:pigeon/pigeon.dart';
+
 class DataModel {
   int code;
   String msg;
@@ -8,53 +9,51 @@ class DataModel {
   DataModel(this.code, this.msg, this.data);
 }
 
-class InitRequest {
-  int appID;
-  InitRequest(this.appID);
-}
 
-class LoginRequest {
-  String userID;
+class PreJoinClassRequest {
+  int appId;
+  String userId;
   String userSig;
-  LoginRequest(this.userID,this.userSig);
+  PreJoinClassRequest(this.appId,this.userId,this.userSig);
 }
 class JoinClassRequest {
   int roomId;
   JoinClassRequest(this.roomId);
 }
 
-///操作请求
-///这里是希望通过纯文本的形式发送方法和参数命令,然后在原生语言中通过反射执行预定义的方法,swift项目通过调用OC的方法执行反射,kotlin正常操作
-///或者是通过各自定义一组枚举值,需要保证三端枚举值完全一致,然后手动在原生中执行各种方法,pigeon不能导出枚举,TODO 我他妈不是很想这么写
-class CommandRequest{
-  String commandMethod;
-  List<String> args;
+
+class ReceivedData{
+  Uint8List data;
+  String extension;
 }
 
-
-
-
-
-// 需要实现的api
+///Flutter持有的原生平台通道,Flutter调用原生方法
 @HostApi()
 abstract class PigeonApi {
-  DataModel pinit(InitRequest params);
   @async
-  DataModel login(LoginRequest params);
+  DataModel preJoinClass(PreJoinClassRequest params);
   @async
   DataModel joinClass(JoinClassRequest params);
   @async
   DataModel quitClass();
+  @async
+  DataModel receiveData(ReceivedData params);
+
 }
 
+
+
+///原生平台持有的Flutter通道,原生调用Flutter方法
 @FlutterApi()
 abstract class PigeonFlutterApi {
   @async
   void exitRoom(DataModel model); // I want this to be async
+  @async
+  DataModel receiveData(ReceivedData params);
 
 }
 
-// 输出配置
+
 void configurePigeon(PigeonOptions opts) {
   opts.dartOut = './lib/pigeon/PigeonPlatformMessage.dart';
   opts.objcHeaderOut = 'ios/pigeon/PigeonPlatformMessage.h';

@@ -49,7 +49,7 @@ class TICRecorder(tic: TICManagerImplM) : TXHttpListenner {
                 e.printStackTrace()
             }
             if (!TextUtils.isEmpty(result)) {
-                tic.sendGroupCustomMessage(TICSDK_CONFERENCE_CMD, result.toByteArray(), null)
+                tic.sendCommand(TICSDK_CONFERENCE_CMD, result.toByteArray())
             } else {
                 TXCLog.i(TAG, "setTimeBaseLine error, result=null")
             }

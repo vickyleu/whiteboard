@@ -26,14 +26,14 @@ if (flutterVersionName == null) {
 buildscript {
     ext.kotlin_version = '1.4.31'
     repositories {
+        mavenCentral()
+        maven { url 'https://dl.bintray.com/tencentqcloudterminal/maven' }
         maven { url 'https://maven.aliyun.com/repository/jcenter'}
         maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/public' }
         maven { url 'https://maven.aliyun.com/repository/central' }
         maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
         google()
-        mavenCentral()
-        maven { url 'https://dl.bintray.com/tencentqcloudterminal/maven' }
     }
 
     dependencies {
@@ -45,19 +45,19 @@ buildscript {
 
 rootProject.allprojects {
     repositories {
+        mavenCentral()
+        maven { url 'https://dl.bintray.com/tencentqcloudterminal/maven' }
         maven { url 'https://maven.aliyun.com/repository/jcenter'}
         maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/public' }
         maven { url 'https://maven.aliyun.com/repository/central' }
         maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
         google()
-        mavenCentral()
-        maven { url 'https://dl.bintray.com/tencentqcloudterminal/maven' }
     }
 }
 
-apply plugin: 'com.android.application'
-//apply plugin: 'com.android.library'
+//apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
@@ -87,11 +87,11 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.3.0'
     implementation 'org.jetbrains:annotations-java5:15.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:3.8.1'
-    compileOnly 'com.tencent.imsdk:imsdk-smart:5.3.425'
+
     //TRTC
     implementation 'com.tencent.liteav:LiteAVSDK_TRTC:8.2.9809'
     //IMSDK
-    implementation 'com.tencent.imsdk:imsdk:4.8.50'
+    compileOnly 'com.tencent.imsdk:imsdk-smart:5.3.425'
 //    compileOnly 'com.tencent.imsdk:imsdk:4.8.50'
     implementation 'com.tencent.tiw.logger:TIWLogger:1.0.1.28'
 

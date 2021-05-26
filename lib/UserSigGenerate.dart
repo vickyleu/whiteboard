@@ -44,7 +44,7 @@ class UserSigGenerate {
 
 
   ///生成UserSig
-  static genTestSig(int sdkAppId,String secretKey,String userId) {
+  static String genTestSig(int sdkAppId,String secretKey,String userId) {
     int currTime = _getCurrentTime();
     String sig = '';
     Map<String, dynamic> sigDoc = new Map<String, dynamic>();

@@ -1,18 +1,19 @@
 package com.bond.whiteboard
 
-import android.content.Context
 import android.util.Log
 import android.widget.FrameLayout
 import com.bond.whiteboard.board.BoardAware
 import com.bond.whiteboard.nativeView.NativeViewLink
-import com.bond.whiteboard.rtc.RtcAware
 import com.bond.whiteboard.teb.BoardAwareInterface
 import com.bond.whiteboard.teb.MyBoardCallback
 import com.pigeon.PigeonPlatformMessage
+import com.tencent.teduboard.TEduBoardController
 import com.tencent.teduboard.TEduBoardController.TEduBoardFileInfo
 import com.tencent.tic.core.TICCallback
 import com.tencent.tic.core.TICClassroomOption
 import com.tencent.tic.core.TICManager
+import com.tencent.tic.core.TICManager.Companion.MODULE_IMSDK
+import com.tencent.tic.core.TICManager.Companion.TICSDK_WHITEBOARD_CMD
 import com.tencent.tic.core.TICManager.TICIMStatusListener
 
 class AwareManager : TICIMStatusListener, BoardAwareInterface {
@@ -24,80 +25,96 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
     /**
      * 课堂资源互动管理
      */
-    protected var mTicManager: TICManager = TICManager.instance
+    protected var mTicManager: TICManager = TICManager.instance.also {
+        it.receiveData(this)
+    }
 
-    var rtcAware: RtcAware? = null
     var boardAware: BoardAware? = null
-
-    fun joinClassroom(classroomOption: TICClassroomOption, ticCallback: TICCallback<Any>) {
-        val context = nativeViewLink?.getApplicationContext()?:return
+    fun preJoinClassroom(
+        arg: PigeonPlatformMessage.PreJoinClassRequest,
+        ticCallback: TICCallback<Any>
+    ) {
+        val context = nativeViewLink?.getApplicationContext()
+        if(context==null){
+            val msg="预创建房间失败,上下文为空"
+            print(msg)
+            ticCallback.onError(MODULE_IMSDK,-1,msg)
+            return
+        }
         boardAware?.destroy()
-        rtcAware?.destroy()
         boardAware=BoardAware(context)
-        rtcAware= RtcAware(mTicManager.tRTCClound).also {
-            it.initRTC(context)
+        try {
+            mTicManager.init(context,arg.appId.toInt(), arg.userId, arg.userSig)
+        }catch (e:Exception){
+            Log.e("mother fucker","why you are crash anytime")
         }
         //2.白板
-        boardAware?.mBoard = mTicManager.boardController?:return
+        val board = mTicManager.boardController
+        if(board==null){
+            val msg="预创建房间失败,白板未初始化"
+            print(msg)
+            ticCallback.onError(MODULE_IMSDK,-1,msg)
+            return
+        }
+        boardAware?.mBoard = board
         //1、设置白板的回调
         boardAware?.mBoardCallback = MyBoardCallback(this)
+        print("预创建参数初始化成功")
+        ticCallback.onSuccess(1)
+    }
+    fun joinClassroom(classroomOption: TICClassroomOption, ticCallback: TICCallback<Any>) {
         classroomOption.boardCallback = boardAware?.mBoardCallback
-        mTicManager.createClassroom(classroomOption.classId,
-            classroomOption.classScene, //如果使用大房间，请使用 TIC_CLASS_SCENE_LIVE
-            object : TICCallback<Any> {
-                override fun onSuccess(data: Any) {
-                    print("创建课堂 成功, 房间号：${classroomOption.classId}")
-                    mTicManager.joinClassroom(classroomOption, ticCallback)
-                }
-                override fun onError(module: String, errCode: Int, errMsg: String) {
-                    if (errCode == 10021) {
-                        print("该课堂已被他人创建，请\"加入课堂\"")
-                        mTicManager.joinClassroom(classroomOption, ticCallback)
-                    } else if (errCode == 10025) {
-                        print("该课堂已创建，请\"加入课堂\"")
-                        mTicManager.joinClassroom(classroomOption, ticCallback)
-                    } else {
-                        val msg="创建课堂失败, 房间号：${classroomOption.classId} errCode:$errCode msg:$errMsg"
-                        print(msg)
-                        ticCallback.onError(module,errCode,msg)
-                    }
-                }
-            })
+        mTicManager.initTEduBoard(classroomOption)
+        print("创建课堂 成功, 房间号：${classroomOption.classId}")
+        ticCallback.onSuccess(1)
+//        mTicManager.createClassroom(classroomOption.classId,
+//            classroomOption.classScene, //如果使用大房间，请使用 TIC_CLASS_SCENE_LIVE
+//            object : TICCallback<Any> {
+//                override fun onSuccess(data: Any) {
+//
+//
+//                }
+//                override fun onError(module: String, errCode: Int, errMsg: String) {
+//                    if (errCode == 10021) {
+//                        print("该课堂已被他人创建，请\"加入课堂\"")
+//                        mTicManager.joinClassroom(classroomOption, ticCallback)
+//                    } else if (errCode == 10025) {
+//                        print("该课堂已创建，请\"加入课堂\"")
+//                        mTicManager.joinClassroom(classroomOption, ticCallback)
+//                    } else {
+//                        val msg="创建课堂失败, 房间号：${classroomOption.classId} errCode:$errCode msg:$errMsg"
+//                        print(msg)
+//                        ticCallback.onError(module,errCode,msg)
+//                    }
+//                }
+//            })
     }
 
-    fun quitClassroom(clearBoard: Boolean, ticCallback: TICCallback<Any>) {
-        mTicManager.quitClassroom(clearBoard, ticCallback)
+    fun quitClassroom() {
         boardAware?.destroy()
 //        rtcAware?.destroy()
+        flutterApi?.exitRoom(PigeonPlatformMessage.DataModel().apply {
+            this.code=1
+            this.msg="退出成功"
+            this.data=null
+        }) {
+
+        }
     }
 
-    fun login(userID: String, userSig: String, ticCallback: TICCallback<Any>) {
-        mTicManager.login(userID, userSig, ticCallback)
+
+    fun receiveData(data: ByteArray, callback: TICCallback<Any>) {
+        try {
+            boardAware?.mBoard?.addSyncData(String(data))
+            callback.onSuccess(1)
+        }catch (e:Exception){
+            callback.onError(TICManager.MODULE_IMSDK, -1, "addSyncData failed: ${e.message}")
+        }
+
     }
 
     override fun onTICForceOffline() {
-        //1、退出TRTC
-        rtcAware?.mTrtcCloud?.exitRoom()
-        quitClassroom(true, object : TICCallback<Any> {
-            override fun onError(module: String, errCode: Int, errMsg: String) {
-                flutterApi?.exitRoom(PigeonPlatformMessage.DataModel().apply {
-                    this.code=errCode.toLong()
-                    this.msg="退出失败:$errMsg"
-                    this.data=null
-                }) {
 
-                }
-            }
-            override fun onSuccess(data: Any) {
-                flutterApi?.exitRoom(PigeonPlatformMessage.DataModel().apply {
-                    this.code=1
-                    this.msg="退出成功"
-                    this.data=null
-                }) {
-
-                }
-            }
-        })
     }
 
     override fun onTICUserSigExpired() {
@@ -133,7 +150,27 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
         //
     }
 
-    fun init(context: Context,appid:Int) {
-        mTicManager.init(context, appid)
+
+    override fun sendMessage(data: ByteArray, extension: String) {
+        flutterApi?.receiveData(PigeonPlatformMessage.ReceivedData().also {
+            it.data=data
+            it.extension=extension
+        }){it->
+            if(it.code.toInt()==-1){
+                print("同步失败了:${it.msg}")
+            }else{
+               val wtf : TEduBoardController = boardAware?.mBoard?:return@receiveData
+//                wtf.addAckData(data) //// 🙄🙄🙄🙄🙄🙄🙄❓❓❓❓❓❓❓❓❓❓🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃
+            }
+        }
     }
+    override fun onTEBSyncData(data: String) {
+        sendMessage(data.toByteArray(),extension = TICSDK_WHITEBOARD_CMD)
+    }
+
+    fun receiveIds(id: String, type: Int) {
+//        rtcAware?.mImgsFid
+    }
+
+
 }

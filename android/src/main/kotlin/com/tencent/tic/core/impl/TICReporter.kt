@@ -202,17 +202,17 @@ object TICReporter {
         var timestamp: Long
         var timeCost = 0
         override fun toString(): String {
-            var result = "timestamp=" + timestamp + Connection
-            result += "event=" + event + Connection
-            result += "errorCode=" + errorCode + Connection
+            var result = "timestamp=$timestamp$Connection"
+            result += "event=$event$Connection"
+            result += "errorCode=$errorCode$Connection"
             if (!TextUtils.isEmpty(errorDesc)) {
-                result += "errorDesc=" + errorDesc + Connection
+                result += "errorDesc=$errorDesc$Connection"
             }
             if (!TextUtils.isEmpty(data)) {
-                result += "data=" + data + Connection
+                result += "data=$data$Connection"
             }
             if (!TextUtils.isEmpty(ext)) {
-                result += "ext=" + ext + Connection
+                result += "ext=$ext$Connection"
             }
             return result
         }

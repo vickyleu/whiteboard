@@ -10,4 +10,6 @@ interface BoardAwareInterface {
     fun setCanRedo(canredo: Boolean)
     fun addFile(fileId: String?): TEduBoardFileInfo?
     fun onTextComponentStatusChange(id: String?, status: String?)
+    fun onTEBSyncData(data: String)
+    fun sendMessage(data: ByteArray, extension: String)
 }

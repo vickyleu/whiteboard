@@ -1,5 +1,6 @@
 package com.bond.whiteboard
 
+import android.util.Log
 import androidx.annotation.NonNull
 import com.bond.whiteboard.nativeView.WhiteboardViewFactory
 import com.pigeon.PigeonPlatformMessage
@@ -21,49 +22,36 @@ class WhiteboardPlugin: FlutterPlugin,ActivityAware {
   private var activityAware:ActivityPluginBinding?=null
 
   private val api = object : PigeonPlatformMessage.PigeonApi{
-    override fun pinit(arg: PigeonPlatformMessage.InitRequest?): PigeonPlatformMessage.DataModel {
-      val context = activityAware?.activity?.application?.applicationContext
-      return if(context!=null&&arg!=null){
-        awareManager.init(context,arg.appID.toInt())
-        PigeonPlatformMessage.DataModel().apply {
-          this.code=1
-          this.msg="初始化成功"
-        }
-      }else{
-        PigeonPlatformMessage.DataModel().apply {
-          this.code=-1
-          this.msg="初始化不成功"
-        }
-      }
-    }
-    override fun login(arg: PigeonPlatformMessage.LoginRequest?, result: PigeonPlatformMessage.Result<PigeonPlatformMessage.DataModel>?) {
+    override fun preJoinClass(arg: PigeonPlatformMessage.PreJoinClassRequest?,
+                              result: PigeonPlatformMessage.Result<PigeonPlatformMessage.DataModel>?) {
       if(arg!=null){
-        awareManager.login(arg.userID,arg.userSig, object : TICCallback<Any> {
-          override fun onError(module: String, errCode: Int, errMsg: String) {
-            result?.success(PigeonPlatformMessage.DataModel().apply {
-              this.code=-1
-              this.msg="${arg.userID}:登录失败,$errMsg"
-            })
-          }
+
+        awareManager.preJoinClassroom(arg,object : TICCallback<Any> {
           override fun onSuccess(data: Any) {
             result?.success(PigeonPlatformMessage.DataModel().apply {
-              this.code=1
-              this.msg="${arg.userID}:登录成功"
+              this.code= 1
+              this.msg="初始化课堂成功"
+            })
+          }
+          override fun onError(module: String, errCode: Int, errMsg: String) {
+            result?.success(PigeonPlatformMessage.DataModel().apply {
+              this.code= errCode.toLong()
+              this.msg="初始化课堂失败:$errMsg"
             })
           }
         })
       }else{
         result?.success(PigeonPlatformMessage.DataModel().apply {
-          this.code=-1
-          this.msg="登录失败:参数错误"
+          this.code= -1
+          this.msg="初始化失败:参数有误"
         })
       }
     }
-
     override fun joinClass(arg: PigeonPlatformMessage.JoinClassRequest?, result: PigeonPlatformMessage.Result<PigeonPlatformMessage.DataModel>?) {
       if(arg!=null){
         //2、如果用户希望白板显示出来时，不使用系统默认的参数，就需要设置特性缺省参数，如是使用默认参数，则填null。
         val initParam = TEduBoardInitParam()
+        initParam.timSync=false
         initParam.brushColor = TEduBoardColor(255, 0, 0, 255)
         initParam.smoothLevel = 0f //用于指定笔迹平滑级别，默认值0.1，取值[0, 1]
         val classroomOption = TICClassroomOption()
@@ -101,27 +89,38 @@ class WhiteboardPlugin: FlutterPlugin,ActivityAware {
     override fun quitClass(result: PigeonPlatformMessage.Result<PigeonPlatformMessage.DataModel>?) {
       //如果是老师，可以清除；
       //如查是学生一般是不要清除数据
-      awareManager.quitClassroom(true, object : TICCallback<Any> {
-        override fun onError(module: String, errCode: Int, errMsg: String) {
-          result?.success(PigeonPlatformMessage.DataModel().apply {
-            this.code= -1
-            this.msg="退出课堂失败,$errMsg"
-          })
-        }
-        override fun onSuccess(data: Any) {
-          result?.success(PigeonPlatformMessage.DataModel().apply {
-            this.code= 1
-            this.msg="退出课堂成功"
-          })
-        }
+      awareManager.quitClassroom()
+      result?.success(PigeonPlatformMessage.DataModel().apply {
+        this.code= 1
+        this.msg="退出课堂成功"
       })
     }
 
-    override fun sendCommand(
-      arg: PigeonPlatformMessage.CommandRequest?,
-      result: PigeonPlatformMessage.Result<PigeonPlatformMessage.DataModel>?
-    ) {
-      ///
+    override fun receiveData(
+      arg: PigeonPlatformMessage.ReceivedData?,
+      result: PigeonPlatformMessage.Result<PigeonPlatformMessage.DataModel>?) {
+      Log.e("mother fucker","receiveData ${arg?.data}" )
+      if(arg?.data!=null){
+        awareManager.receiveData(arg.data!!, object : TICCallback<Any> {
+          override fun onError(module: String, errCode: Int, errMsg: String) {
+            result?.success(PigeonPlatformMessage.DataModel().apply {
+              this.code=-1
+              this.msg="传参失败,$errMsg"
+            })
+          }
+          override fun onSuccess(data: Any) {
+            result?.success(PigeonPlatformMessage.DataModel().apply {
+              this.code=1
+              this.msg="传参成功"
+            })
+          }
+        })
+      }else{
+        result?.success(PigeonPlatformMessage.DataModel().apply {
+          this.code=-1
+          this.msg="传参失败:参数错误"
+        })
+      }
     }
   }
 

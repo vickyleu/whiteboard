@@ -14,26 +14,6 @@ internal class MySettingCallback : IMoreListener {
     var _canRedo=true
     var _canUndo=true
 
-    override fun onEnableAudio(bEnableAudio: Boolean) {
-        awareManager?.rtcAware?.mEnableAudio = bEnableAudio
-        awareManager?.rtcAware?.enableAudioCapture(bEnableAudio)
-    }
-
-    override fun onSwitchAudioRoute(speaker: Boolean) {
-        awareManager?.rtcAware?.mEnableAudioRouteSpeaker = speaker
-        awareManager?.rtcAware?.mTrtcCloud?.setAudioRoute(if (speaker) TRTCCloudDef.TRTC_AUDIO_ROUTE_SPEAKER else TRTCCloudDef.TRTC_AUDIO_ROUTE_EARPIECE)
-    }
-
-    override fun onEnableCamera(bEnableCamera: Boolean) {
-        awareManager?.rtcAware?.mEnableCamera = bEnableCamera
-        awareManager?.rtcAware?.startLocalVideo(bEnableCamera)
-    }
-
-    override fun onSwitchCamera(bFrontCamera: Boolean) {
-        awareManager?.rtcAware?.mEnableFrontCamera = bFrontCamera
-        awareManager?.rtcAware?.mTrtcCloud?.switchCamera()
-    }
-
     //------------board------------
     override fun onSetDrawEnable(SetDrawEnable: Boolean) {
         awareManager?.boardAware?.mBoard?.isDrawEnable = SetDrawEnable
@@ -84,10 +64,10 @@ internal class MySettingCallback : IMoreListener {
 
     override fun onAddElement(type: Int, url: String) {
         val elementId = awareManager?.boardAware?.mBoard?.addElement(type, url)
-        if (type == 4) {
-            awareManager?.rtcAware?.mAudioElementId = elementId
-        }
-        Log.d("evaluateJs", "onAddElement elementId: " + elementId + " mAudioElementId: " + awareManager?.rtcAware?.mAudioElementId)
+//        if (type == 4) {
+//            awareManager?.rtcAware?.mAudioElementId = elementId
+//        }
+//        Log.d("evaluateJs", "onAddElement elementId: " + elementId + " mAudioElementId: " + awareManager?.rtcAware?.mAudioElementId)
     }
 
     override fun onSetBrushColor(color: Int) {
@@ -202,24 +182,25 @@ internal class MySettingCallback : IMoreListener {
     }
 
     override fun onAddImagesFile(urls: List<String>) {
-        awareManager?.rtcAware?.mImgsFid = awareManager?.boardAware?.mBoard?.addImagesFile(urls)
+        awareManager?.receiveIds(awareManager?.boardAware?.mBoard?.addImagesFile(urls)?:return,1)
+//        awareManager?.rtcAware?.mImgsFid = awareManager?.boardAware?.mBoard?.addImagesFile(urls)
     }
 
     override fun onPlayVideoFile(url: String) {
         awareManager?.boardAware?.mBoard?.addVideoFile(url)
     }
 
-    override fun onPlayAudio() {
-        if (!TextUtils.isEmpty(awareManager?.rtcAware?.mAudioElementId)) {
-            awareManager?.boardAware?.mBoard?.playAudio(awareManager?.rtcAware?.mAudioElementId)
+    override fun onPlayAudio(audioElementId:String?) {
+        if (!TextUtils.isEmpty(audioElementId)) {
+            awareManager?.boardAware?.mBoard?.playAudio(audioElementId)
             // mBoard.seekAudio(mAudioElementId, 120);
             //     mBoard.setAudioVolume(mAudioElementId,0.7f);
         }
     }
 
-    override fun onPauseAudio() {
-        if (!TextUtils.isEmpty(awareManager?.rtcAware?.mAudioElementId)) {
-            awareManager?.boardAware?.mBoard?.pauseAudio(awareManager?.rtcAware?.mAudioElementId)
+    override fun onPauseAudio(audioElementId:String?) {
+        if (!TextUtils.isEmpty(audioElementId)) {
+            awareManager?.boardAware?.mBoard?.pauseAudio(audioElementId)
             // mBoard.getAudioVolume(mAudioElementId);
             awareManager?.boardAware?.mBoard?.getBoardElementList("")
         }
@@ -255,10 +236,10 @@ internal class MySettingCallback : IMoreListener {
 }
 private interface IMoreListener {
     //TRTC
-    fun onEnableAudio(bEnableAudio: Boolean)
-    fun onSwitchAudioRoute(speaker: Boolean)
-    fun onEnableCamera(bEnableCamera: Boolean)
-    fun onSwitchCamera(bFrontCamera: Boolean)
+//    fun onEnableAudio(bEnableAudio: Boolean)
+//    fun onSwitchAudioRoute(speaker: Boolean)
+//    fun onEnableCamera(bEnableCamera: Boolean)
+//    fun onSwitchCamera(bFrontCamera: Boolean)
 
     //Board(涂鸭操作)
     fun onSetDrawEnable(SetDrawEnable: Boolean)
@@ -308,8 +289,8 @@ private interface IMoreListener {
     fun onPlayVideoFile(url: String)
     fun onShowVideoCtrl(value: Boolean)
     fun onSyncAndReload()
-    fun onPlayAudio()
-    fun onPauseAudio()
+    fun onPlayAudio(audioElementId:String?)
+    fun onPauseAudio(audioElementId:String?)
     fun onAddBackupDomain()
     fun onRemoveBackupDomain()
 }

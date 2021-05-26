@@ -11,10 +11,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  crypto: "2.1.5"
+  crypto: "3.0.1"
 
 dev_dependencies:
-  pigeon:  any
+  pigeon:  "0.2.1"
 
 flutter:
   plugin:

@@ -22,7 +22,9 @@ class MyBoardCallback(var boardAwareCallback: BoardAwareInterface) : TEduBoardCa
         boardAwareCallback.onTEBHistroyDataSyncCompleted()
     }
 
-    override fun onTEBSyncData(data: String) {}
+    override fun onTEBSyncData(data: String) {
+        boardAwareCallback.onTEBSyncData(data)
+    }
     override fun onTEBAddBoard(boardId: List<String>, fileId: String) {
         TXLog.i(TAG, "onTEBAddBoard:$fileId")
     }
