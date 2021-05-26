@@ -3,7 +3,8 @@
     package="com.bond.whiteboard_example">
    <application
         android:label="whiteboard_example"
-        tools:replace="android:label"
+        tools:replace="android:label,android:allowBackup"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
