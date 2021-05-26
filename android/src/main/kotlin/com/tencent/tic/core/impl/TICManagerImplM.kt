@@ -7,6 +7,7 @@ import com.bond.whiteboard.teb.BoardAwareInterface
 import com.tencent.liteav.basic.log.TXCLog
 import com.tencent.teduboard.TEduBoardController
 import com.tencent.teduboard.TEduBoardController.*
+import com.tencent.tic.core.TICCallback
 import com.tencent.tic.core.TICClassroomOption
 import com.tencent.tic.core.TICManager
 import com.tencent.tic.core.impl.TICReporter.report
@@ -123,188 +124,18 @@ class TICManagerImplM private constructor() : TICManager() {
         init {
             mTICManagerRef = WeakReference(ticManager)
         }
-
-
     }
 
-//    override fun createClassroom(classId: Int, scene: Int, callback: TICCallback<Any>?) {
-//        TXCLog.i(
-//            TAG,
-//            "TICManager: createClassroom classId:$classId scene:$scene callback:$callback"
-//        )
-//        report(TICReporter.EventId.CREATE_GROUP_START)
-//        // 为了减少用户操作成本（收到群进出等通知需要配置工单才生效）群组类型由ChatRoom改为Public
-//        val groupId = classId.toString()
-//        val groupName = "interact group"
-//        val groupType = if (scene == TICClassScene.TIC_CLASS_SCENE_LIVE) "AVChatRoom" else "Public"
-//        val param = CreateGroupParam(groupType, groupName)
-//        param.groupId = groupId
-//        param.addOption = TIMGroupAddOpt.TIM_GROUP_ADD_ANY //
-//        TIMGroupManager.getInstance().createGroup(param, object : TIMValueCallBack<String> {
-//            override fun onSuccess(s: String) {
-//                TXCLog.i(TAG, "TICManager: createClassroom onSuccess:$classId msg:$s")
-//                report(TICReporter.EventId.CREATE_GROUP_END)
-//                callback?.onSuccess(classId)
-//            }
-//
-//            override fun onError(errCode: Int, errMsg: String) {
-//                if (null != callback) {
-//                    if (errCode == 10025) { // 群组ID已被使用，并且操作者为群主，可以直接使用。
-//                        TXCLog.i(TAG, "TICManager: createClassroom 10025 onSuccess:$classId")
-//                        callback.onSuccess(classId)
-//                    } else {
-//                        TXCLog.i(TAG, "TICManager: createClassroom onError:$errCode msg:$errMsg")
-//                        report(TICReporter.EventId.CREATE_GROUP_END, errCode, errMsg)
-//                        callback.onError(MODULE_IMSDK, errCode, errMsg)
-//                    }
-//                }
-//            }
-//        })
-//    }
-//
-//    override fun destroyClassroom(classId: Int, callback: TICCallback<Any>?) {
-//        TXCLog.i(TAG, "TICManager: destroyClassroom classId:$classId callback:$callback")
-//        report(TICReporter.EventId.DELETE_GROUP_START)
-//        val groupId = classId.toString()
-//        TIMGroupManager.getInstance().deleteGroup(groupId, object : TIMCallBack {
-//            override fun onError(errorCode: Int, errInfo: String) {
-//                TXCLog.i(TAG, "TICManager: destroyClassroom onError:$errorCode msg:$errInfo")
-//                report(TICReporter.EventId.DELETE_GROUP_END, errorCode, errInfo)
-//                notifyError(callback, MODULE_IMSDK, errorCode, errInfo)
-//            }
-//
-//            override fun onSuccess() {
-//                report(TICReporter.EventId.DELETE_GROUP_END)
-//                TXCLog.i(TAG, "TICManager: destroyClassroom onSuccess")
-//            }
-//        })
-//    }
-
-//    override fun joinClassroom(option: TICClassroomOption?, callback: TICCallback<Any>?) {
-//        if (option == null || option.classId < 0) {
-//            TXCLog.i(TAG, "TICManager: joinClassroom Para Error")
-//            notifyError(
-//                callback,
-//                MODULE_TIC_SDK,
-//                Error.ERR_INVALID_PARAMS,
-//                Error.ERR_MSG_INVALID_PARAMS
-//            )
-//            return
-//        }
-//        TXCLog.i(TAG, "TICManager: joinClassroom classId:$option callback:$callback")
-//        classroomOption = option
-//        val classId = classroomOption!!.classId
-//        var groupId = classId.toString()
-//        val desc = "board group"
-//
-//        TIMGroupManager.getInstance().applyJoinGroup(groupId, desc + groupId, object : TIMCallBack {
-//            override fun onSuccess() {
-//                TXCLog.i(TAG, "TICManager: joinClassroom onSuccess ")
-//                report(TICReporter.EventId.JOIN_GROUP_END)
-//                onJoinClassroomSuccessfully(callback)
-//            }
-//
-//            override fun onError(errCode: Int, errMsg: String) {
-//                if (callback != null) {
-//                    if (errCode == 10013) { //you are already group member.
-//                        TXCLog.i(TAG, "TICManager: joinClassroom 10013 onSuccess")
-//                        report(TICReporter.EventId.JOIN_GROUP_END)
-//                        onJoinClassroomSuccessfully(callback)
-//                    } else {
-//                        TXCLog.i(TAG, "TICManager: joinClassroom onError:$errCode|$errMsg")
-//                        report(TICReporter.EventId.JOIN_GROUP_END, errCode, errMsg)
-//                        callback.onError(MODULE_IMSDK, errCode, errMsg)
-//                    }
-//                }
-//            }
-//        })
-////        if (classroomOption!!.compatSaas) {
-////            groupId += COMPAT_SAAS_CHAT
-////            TIMGroupManager.getInstance()
-////                .applyJoinGroup(groupId, desc + groupId, object : TIMCallBack {
-////                    override fun onSuccess() {
-////                        TXCLog.i(TAG, "TICManager: joinClassroom compatSaas onSuccess ")
-////                    }
-////
-////                    override fun onError(errCode: Int, errMsg: String) {
-////                        if (callback != null) {
-////                            if (errCode == 10013) { //you are already group member.
-////                                TXCLog.i(
-////                                    TAG,
-////                                    "TICManager: joinClassroom compatSaas 10013 onSuccess"
-////                                )
-////                            } else {
-////                                TXCLog.i(
-////                                    TAG,
-////                                    "TICManager: joinClassroom compatSaas onError:$errCode|$errMsg"
-////                                )
-////                            }
-////                        }
-////                    }
-////                })
-////        }
-//    }
-//
-//    override fun quitClassroom(clearBoard: Boolean, callback: TICCallback<Any>?) {
-//        TXCLog.i(TAG, "TICManager: quitClassroom $clearBoard|$callback")
-//        if (classroomOption == null) {
-//            TXCLog.e(TAG, "TICManager: quitClassroom para Error.")
-//            notifyError(
-//                callback,
-//                MODULE_TIC_SDK,
-//                Error.ERR_NOT_IN_CLASS,
-//                Error.ERR_MSG_NOT_IN_CLASS
-//            )
-//            return
-//        }
-//        report(TICReporter.EventId.QUIT_GROUP_START)
-//        //2、如果clearBoard= true, 清除board中所有的历史数据，下次进来时看到的都是全新白板
-//        unitTEduBoard(clearBoard)
-//        //3、im退房间
-//        val classId = classroomOption!!.classId
-//        var groupId = classId.toString()
-////        TIMGroupManager.getInstance().quitGroup(groupId, object : TIMCallBack {
-////            //NOTE:在被挤下线时，不会回调
-////            override fun onError(errorCode: Int, errInfo: String) {
-////                TXCLog.e(TAG, "TICManager: quitClassroom onError, err:$errorCode msg:$errInfo")
-////                report(TICReporter.EventId.QUIT_GROUP_END, errorCode, errInfo)
-////                if (callback != null) {
-////                    if (errorCode == 10009) {
-////                        callback.onSuccess(0)
-////                    } else {
-////                        callback.onError(MODULE_IMSDK, errorCode, errInfo)
-////                    }
-////                }
-////            }
-////
-////            override fun onSuccess() {
-////                TXCLog.e(TAG, "TICManager: quitClassroom onSuccess")
-////                report(TICReporter.EventId.QUIT_GROUP_END)
-////                notifySuccess(callback, 0)
-////            }
-////        })
-////        if (classroomOption!!.compatSaas) {
-////            groupId += COMPAT_SAAS_CHAT
-////            TIMGroupManager.getInstance().quitGroup(groupId, object : TIMCallBack {
-////                //NOTE:在被挤下线时，不会回调
-////                override fun onError(errorCode: Int, errInfo: String) {
-////                    TXCLog.e(
-////                        TAG,
-////                        "TICManager: quitClassroom compatSaas, err:$errorCode msg:$errInfo"
-////                    )
-////                }
-////
-////                override fun onSuccess() {
-////                    TXCLog.e(TAG, "TICManager: quitClassroom onSuccess compatSaas")
-////                }
-////            })
-////        }
-//
-//        //停止同步时间
-//        stopSyncTimer()
-//        //
-//        releaseClass()
-//    }
+    override fun quitClassroom(clearBoard: Boolean,callback: TICCallback<Any>){
+        TXCLog.i(TAG, "TICManager: quitClassroom $clearBoard")
+        report(TICReporter.EventId.QUIT_GROUP_START)
+        //2、如果clearBoard= true, 清除board中所有的历史数据，下次进来时看到的都是全新白板
+        unitTEduBoard(clearBoard)
+        //停止同步时间
+        stopSyncTimer()
+        //
+        releaseClass()
+    }
 
 
     //Board进行初始化
@@ -322,6 +153,7 @@ class TICManagerImplM private constructor() : TICManager() {
             sdkAppId, userInfo.userId, userInfo.userSig
         )
         mBoard!!.init(authParam, classroomOption!!.classId, classroomOption!!.boardInitPara)
+        startSyncTimer()
     }
 
     private fun unitTEduBoard(clearBoard: Boolean) {

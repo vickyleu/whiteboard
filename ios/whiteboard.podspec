@@ -15,13 +15,12 @@ A new Flutter plugin project for tencent whiteboard.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*','pigeon/**/*','tencent/**/*'
   s.dependency 'Flutter'
-  s.platform = :ios, '8.0'
+  s.platform = :ios, '10.0'
   # 默认集成全部第三方 SDK
   s.dependency 'TEduBoard_iOS', '2.6.0.39'
   s.dependency 'Masonry', '1.1.0'
   s.dependency 'TIWLogger_iOS','1.0.1.21'
-  s.dependency 'TXIMSDK_iOS','4.6.101'
-  s.dependency 'TXLiteAVSDK_TRTC','8.3.9884'
+  s.dependency 'TXLiteAVSDK_TRTC','8.1.9719'
   s.frameworks = "Accelerate"
   s.static_framework = true
   # Flutter.framework does not contain a i386 slice.

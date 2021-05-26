@@ -151,6 +151,7 @@ class WhiteboardController {//extends Listener
   }
 
   void dispose() {
+    api.quitClass();
     _pigeonFlutterApi=null;
     _isCreated=false;
     PigeonFlutterApi.setup(null);

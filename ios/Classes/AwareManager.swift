@@ -9,82 +9,84 @@ import Foundation
 import Masonry
 
 public class AwareManager : NSObject, BoardAwareInterface{
-    
-    
-    var mTicManager : TICManager?
-    
-    var rtcAware: RtcAware?
+    let mTicManager : TICManager = TICManager.sharedInstance()
     var boardAware: BoardAware?
-    
     var nativeViewLink:NativeViewLink?
-
     private let settingCallback = MySettingCallback()
-    
+    public var flutterApi:FLTPigeonFlutterApi?
+
     public override init() {
         super.init()
         settingCallback.also{(it : MySettingCallback) in
             it.awareManager = self
         }
     }
-    
-    func pinit(appid:Int) {
-        mTicManager = TICManager.sharedInstance()
-        mTicManager?.`init`(Int32(appid), callback: { (module, code, errMsg) in
-            
-        })
-    }
-    
-    func login(userId: String, userSig: String, ticCallback: @escaping TICCallback) {
-        mTicManager?.login(userId, userSig: userSig, callback:ticCallback)
-    }
-    
-    func joinClass(_ classroomOption:TICClassroomOption,ticCallback: @escaping TICCallback) {
-        
+    func preJoinClassroom(arg: FLTPreJoinClassRequest,ticCallback: @escaping TICCallback) {
         boardAware?.destroy()
-        rtcAware?.destroy()
         boardAware=BoardAware()
-        rtcAware = RtcAware(mTicManager?.getTRTCCloud())
-        rtcAware?.initRTC()
-        //2.白板
-
+        mTicManager.`init`(Int32(arg.appId!.intValue), userId:arg.userId, userSig:arg.userSig)
+        mTicManager.sendCommandBlock = {(ext,d) in
+            let data = FLTReceivedData()
+            data.data = FlutterStandardTypedData(bytes: d!)
+            data.extension=ext
+            self.flutterApi?.receive(data, completion: {model,_ in
+                if(model.code?.intValue == -1){
+                    print("同步失败了:${it.msg}")
+                }else{
+                    guard  let wtf : TEduBoardController = self.boardAware?.mBoard else { return }
+//                    wtf.addAckData(data) //// 🙄🙄🙄🙄🙄🙄🙄❓❓❓❓❓❓❓❓❓❓🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃
+                }
+            })
+        }
         //1、设置白板的回调
         let mbcallback = MyBoardCallback(self)
-        self.boardAware?.mBoardCallback = mbcallback
-        classroomOption.boardDelegate = mbcallback
-
-        let cb : TICCallback =  { module , code , desc  in
-            guard let boardController =  self.mTicManager?.getBoardController() else {
-                ticCallback(module,-1, "白板初始化不成功")
-                return
-            }
-            self.boardAware?.mBoard = boardController
-            mbcallback.onTEBInit() ///腾讯的Android和iOS回调不同步,这里手动调用,保证在业务层处理逻辑是一样的.反正回调中我会判断画板是否已经准备就绪的
-            ticCallback(module,code,desc)
-        }
-
-        mTicManager?.createClassroom(Int32(classroomOption.classId), classScene: classroomOption.classScene){ (module, errCode, errMsg) in
-            if(errCode == 0){
-                print("创建课堂 成功, 房间号：\(classroomOption.classId)")
-                self.mTicManager?.joinClassroom(classroomOption, callback:cb)
-            }else if(errCode == 10021){
-                print("该课堂已被他人创建，请\"加入课堂\"")
-                self.mTicManager?.joinClassroom(classroomOption,  callback:cb)
-            }else if (errCode == 10025) {
-                print("该课堂已创建，请\"加入课堂\"")
-                self.mTicManager?.joinClassroom(classroomOption,  callback:cb)
-            } else {
-                let msg="创建课堂失败, 房间号：\(classroomOption.classId) errCode:\(errCode) msg:\(errMsg)"
-                print(msg)
-                ticCallback(module,errCode,msg)
-            }
-        }
+        boardAware?.mBoardCallback = mbcallback
+       
+        ticCallback(TICModule.TICMODULE_IMSDK,1,"预创建参数初始化成功")
     }
-    
-    func quitClassroom(_ clearBoard: Bool, ticCallback: @escaping TICCallback) {
-        mTicManager?.quitClassroom(clearBoard, callback: ticCallback)
+    func joinClass(_ classroomOption:TICClassroomOption,ticCallback: @escaping TICCallback) {
+        classroomOption.boardDelegate = boardAware?.mBoardCallback
+        mTicManager.initTEduBoard(classroomOption)
+        guard let boardController =  mTicManager.getBoardController() else {
+            ticCallback(TICModule.TICMODULE_IMSDK,-1, "白板初始化不成功")
+            return
+        }
+        boardAware?.mBoard = boardController
+        classroomOption.boardDelegate?.onTEBInit() ///腾讯的Android和iOS回调不同步,这里手动调用,保证在业务层处理逻辑是一样的.反正回调中我会判断画板是否已经准备就绪的
+        ticCallback(TICModule.TICMODULE_IMSDK,1,"创建课堂 成功, 房间号 \(classroomOption.classId)")
+    }
+    func quitClassroom() {
         boardAware?.destroy()
+        mTicManager.quitClassroom(true,callback: {_, errCode, errMsg in
+            if(errCode == -1){
+                print("mother fucker  退出白板失败:\(errCode)  \(errMsg)")
+                self.removeBoardView()
+            }else{
+                self.removeBoardView()
+            }
+        })
+        mTicManager.sendCommandBlock = nil
+        flutterApi?.exitRoom(FLTDataModel().also { (v:FLTDataModel) in
+            v.code=1
+            v.msg="退出成功"
+            v.data=nil
+        }) { (error: Error?) in
+
+        }
     }
-    
+
+
+    func receiveData(data: [UInt8], callback: @escaping TICCallback) {
+        do {
+            let string = try String(bytes: data,encoding: .utf8)
+            try boardAware?.mBoard?.addSyncData(string)
+            callback(TICModule.TICMODULE_IMSDK,1, "同步数据成功")
+        } catch let error{
+            callback(TICModule.TICMODULE_IMSDK,-1,"addSyncData failed: \(error)")
+        }
+}
+
+
     /////
     func onTEBHistroyDataSyncCompleted() {
         guard let board = boardAware?.mBoard else { return }
@@ -92,7 +94,7 @@ public class AwareManager : NSObject, BoardAwareInterface{
         let currentFile = board.getCurrentFile()
         print("DataSyncCompleted currentBoard:\(currentBoard) currentFile:\(currentFile)")
     }
-    
+
     func addBoardView() {
         guard let boardView = boardAware?.mBoard?.getBoardRenderView() else { return }
         print("onTeb给点响应啊,妈的  nativeViewLink:\(nativeViewLink)")
@@ -103,26 +105,29 @@ public class AwareManager : NSObject, BoardAwareInterface{
             make?.bottom.equalTo()(root)
         }
     }
-    
+
     func removeBoardView() {
         guard let boardView = boardAware?.mBoard?.getBoardRenderView() else { return }
         nativeViewLink?.removeView(boardView)
     }
-    
+
     func setCanUndo(_ canUndo: Bool) {
         settingCallback.setCanUndo(canUndo)
     }
-    
+
     func setCanRedo(_ canredo: Bool) {
         settingCallback.setCanRedo(canredo)
     }
-    
+
     func addFile(_ fileId: String?) -> TEduBoardFileInfo? {
         return nil
     }
-    
+
     func onTextComponentStatusChange(_ id: String?,_ status: String?) {
         //
     }
-    
+
+    func receiveIds(id: String, type: Int) {
+        //rtcAware?.mImgsFid
+    }
 }

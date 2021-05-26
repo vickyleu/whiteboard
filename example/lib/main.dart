@@ -32,8 +32,8 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeLeft,
     ]);
     initSDK();
     super.initState();
@@ -44,6 +44,7 @@ class _MyAppState extends State<MyApp> {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
+    widget._whiteboardController.dispose();
     super.dispose();
   }
 
@@ -122,6 +123,20 @@ class _MyAppState extends State<MyApp> {
         // "Public"
             , groupName: "interact group",groupID: "$groupId").then((value){
           enterRoom();
+
+          //     if (errCode == 10021) {
+//                        print("该课堂已被他人创建，请\"加入课堂\"")
+//                        mTicManager.joinClassroom(classroomOption, ticCallback)
+//                    } else if (errCode == 10025) {
+//                        print("该课堂已创建，请\"加入课堂\"")
+//                        mTicManager.joinClassroom(classroomOption, ticCallback)
+//                    } else {
+//                        val msg="创建课堂失败, 房间号：${classroomOption.classId} errCode:$errCode msg:$errMsg"
+//                        print(msg)
+//                        ticCallback.onError(module,errCode,msg)
+//                    }
+//                }
+
         });
       }
     });

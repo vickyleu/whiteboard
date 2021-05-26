@@ -3,7 +3,6 @@
 //
 
 import Foundation
-
 public class BoardAware{
 
     var mBoard :TEduBoardController?

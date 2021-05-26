@@ -120,6 +120,7 @@ abstract class TICManager {
      */
     abstract fun sendOfflineRecordInfo()
     abstract fun receiveData(awareManager: BoardAwareInterface)
+    abstract fun quitClassroom(clearBoard: Boolean,callback: TICCallback<Any>)
 
     companion object {
         /**

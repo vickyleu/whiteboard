@@ -1,9 +1,9 @@
 # Uncomment this line to define a global platform for your project
-# platform :ios, '9.0'
+platform :ios, '10.0'
 source 'https://github.com/CocoaPods/Specs.git'
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
-
+install! 'cocoapods', :disable_input_output_paths => true
 project 'Runner', {
   'Debug' => :debug,
   'Profile' => :release,
@@ -26,7 +26,7 @@ end
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
 
 flutter_ios_podfile_setup
-
+install! 'cocoapods', :disable_input_output_paths => true
 target 'Runner' do
   use_frameworks!
   use_modular_headers!

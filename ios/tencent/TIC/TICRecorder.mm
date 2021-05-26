@@ -46,9 +46,9 @@
 - (void)reportGroupId:(NSString *)groupId sdkAppId:(int)sdkAppId userId:(NSString *)userId userSig:(NSString *)userSig
 {
     NSMutableDictionary *param = [NSMutableDictionary dictionary];
-    [param setObject:@"open_record_svc" forKey:@"cmd"];
-    [param setObject:@"report_group" forKey:@"sub_cmd"];
-    [param setObject:groupId forKey:@"group_id"];
+    param[@"cmd"] = @"open_record_svc";
+    param[@"sub_cmd"] = @"report_group";
+    param[@"group_id"] = groupId;
     NSData *paramData = [NSJSONSerialization dataWithJSONObject:param options:NSJSONWritingSortedKeys error:nil];
     NSURLSession *session = [NSURLSession sharedSession];
     NSString *url = [NSString stringWithFormat:@"https://yun.tim.qq.com/v4/ilvb_edu/record?sdkappid=%d&identifier=%@&usersig=%@&contenttype=json", sdkAppId, userId, userSig];
@@ -71,30 +71,16 @@
 
 - (void)reportFromDelegate
 {
-    uint64_t ntp = [[[NSDate date] dateByAddingTimeInterval:-self.netAssociation.offset] timeIntervalSince1970] * 1000;
-    uint64_t timestamp = [[NSDate date] timeIntervalSince1970] * 1000;
+    uint64_t ntp = static_cast<uint64_t>([[[NSDate date] dateByAddingTimeInterval:-self.netAssociation.offset] timeIntervalSince1970] * 1000);
+    uint64_t timestamp = static_cast<uint64_t>([[NSDate date] timeIntervalSince1970] * 1000);
     uint64_t tick = [self getTickCount];
     NSMutableDictionary *param = [NSMutableDictionary dictionary];
-    [param setObject:@(1008) forKey:@"type"];
-    [param setObject:@(tick) forKey:@"avsdk_time"];
-    [param setObject:@(timestamp) forKey:@"board_time"];
-    [param setObject:@(ntp) forKey:@"time_line"];
+    param[@"type"] = @(1008);
+    param[@"avsdk_time"] = @(tick);
+    param[@"board_time"] = @(timestamp);
+    param[@"time_line"] = @(ntp);
     NSData *paramData = [NSJSONSerialization dataWithJSONObject:param options:NSJSONWritingSortedKeys error:nil];
-    
-    TIMCustomElem *elem = [[TIMCustomElem alloc] init];
-    elem.ext = kTICEduRecordCmd;
-    elem.data = paramData;
-    TIMMessage *msg = [[TIMMessage alloc] init];
-    [msg addElem:elem];
-    TIMOfflinePushInfo *pushinfo = [[TIMOfflinePushInfo alloc] init];
-    pushinfo.ext = kTICEduRecordCmd;
-    [msg setOfflinePushInfo:pushinfo];
-    
-    __weak typeof(self) ws = self;
-    [[TICManager sharedInstance] sendGroupMessage:msg callback:^(TICModule module, int code, NSString *desc) {
-        TICBLOCK_SAFE_RUN(ws.callback, module, code, desc);
-    }];
-    
+    [TICManager sharedInstance].sendCommandBlock(kTICEduRecordCmd,paramData);
     [self.netAssociation finish];
     self.netAssociation.delegate = nil;
     self.netAssociation = nil;

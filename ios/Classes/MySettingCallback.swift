@@ -18,27 +18,7 @@ internal class  MySettingCallback : NSObject,IMoreListener {
         _canRedo=canredo
     }
     
-    func onEnableAudio(bEnableAudio: Bool) {
-        awareManager?.rtcAware?.mEnableAudio = bEnableAudio
-        awareManager?.rtcAware?.enableAudioCapture(bEnableAudio)
-    }
-    
-    
-    func onSwitchAudioRoute(speaker: Bool) {
-        awareManager?.rtcAware?.mEnableAudioRouteSpeaker = speaker
-        awareManager?.rtcAware?.mTrtcCloud?.setAudioRoute(speaker ? TRTCAudioRoute.modeSpeakerphone : TRTCAudioRoute.modeEarpiece)
-    }
-    
-    func onEnableCamera(bEnableCamera: Bool) {
-        awareManager?.rtcAware?.mEnableCamera = bEnableCamera
-        awareManager?.rtcAware?.startLocalVideo(bEnableCamera)
-    }
-    
-    func onSwitchCamera(bFrontCamera: Bool) {
-        awareManager?.rtcAware?.mEnableFrontCamera = bFrontCamera
-        awareManager?.rtcAware?.mTrtcCloud?.switchCamera()
-    }
-    
+   
     func onSetDrawEnable(SetDrawEnable: Bool) {
         awareManager?.boardAware?.mBoard?.setDrawEnable(SetDrawEnable)
     }
@@ -104,10 +84,10 @@ internal class  MySettingCallback : NSObject,IMoreListener {
     
     func onAddElement(type: Int, url: String) {
         let elementId = awareManager?.boardAware?.mBoard?.addElement(url, type: TEduBoardElementType(rawValue: type)!)
-        if (type == 4) {
-            awareManager?.rtcAware?.mAudioElementId = elementId
-        }
-        print("evaluateJs onAddElement elementId: \(elementId) mAudioElementId: \(awareManager?.rtcAware?.mAudioElementId)")
+//        if (type == 4) {
+//            awareManager?.rtcAware?.mAudioElementId = elementId
+//        }
+//        print("evaluateJs onAddElement elementId: \(elementId) mAudioElementId: \(awareManager?.rtcAware?.mAudioElementId)")
     }
     
     func onSetBrushColor(color: Int) {
@@ -212,7 +192,8 @@ internal class  MySettingCallback : NSObject,IMoreListener {
     }
     
     func onAddImagesFile(urls: Array<String>) {
-        awareManager?.rtcAware?.mImgsFid = awareManager?.boardAware?.mBoard?.addImagesFile(urls)
+        guard let board =  awareManager?.boardAware?.mBoard else { return }
+        awareManager?.receiveIds(id:board.addImagesFile(urls) ,type:1)
     }
     
     func onPlayVideoFile(url: String) {
@@ -227,23 +208,18 @@ internal class  MySettingCallback : NSObject,IMoreListener {
         awareManager?.boardAware?.mBoard?.syncAndReload()
     }
     
-    func onPlayAudio() {
-        guard let elem = awareManager?.rtcAware?.mAudioElementId else {
-            return
-        }
-        if (!elem.isEmpty) {
-            awareManager?.boardAware?.mBoard?.playAudio(elem)
+    func onPlayAudio(audioElementId:String?) {
+        if (audioElementId != nil && !audioElementId!.isEmpty) {
+            awareManager?.boardAware?.mBoard?.playAudio(audioElementId)
             // mBoard.seekAudio(mAudioElementId, 120);
             //     mBoard.setAudioVolume(mAudioElementId,0.7f);
         }
     }
     
-    func onPauseAudio() {
-        guard let elem = awareManager?.rtcAware?.mAudioElementId else {
-            return
-        }
-        if (!elem.isEmpty) {
-            awareManager?.boardAware?.mBoard?.pauseAudio(elem)
+    func onPauseAudio(audioElementId:String?) {
+       
+        if (audioElementId != nil && !audioElementId!.isEmpty) {
+            awareManager?.boardAware?.mBoard?.pauseAudio(audioElementId)
             // mBoard.getAudioVolume(mAudioElementId);
             awareManager?.boardAware?.mBoard?.getBoardElementList("")
         }
@@ -260,10 +236,10 @@ internal class  MySettingCallback : NSObject,IMoreListener {
 
 protocol IMoreListener {
     //TRTC
-    func onEnableAudio(bEnableAudio: Bool)
-    func onSwitchAudioRoute(speaker: Bool)
-    func onEnableCamera(bEnableCamera: Bool)
-    func onSwitchCamera(bFrontCamera: Bool)
+//    func onEnableAudio(bEnableAudio: Bool)
+//    func onSwitchAudioRoute(speaker: Bool)
+//    func onEnableCamera(bEnableCamera: Bool)
+//    func onSwitchCamera(bFrontCamera: Bool)
     
     //Board(涂鸭操作)
     func onSetDrawEnable(SetDrawEnable: Bool)
@@ -313,8 +289,8 @@ protocol IMoreListener {
     func onPlayVideoFile(url: String)
     func onShowVideoCtrl(value: Bool)
     func onSyncAndReload()
-    func onPlayAudio()
-    func onPauseAudio()
+    func onPlayAudio(audioElementId:String?)
+    func onPauseAudio(audioElementId:String?)
     func onAddBackupDomain()
     func onRemoveBackupDomain()
 }

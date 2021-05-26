@@ -67,31 +67,19 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
         mTicManager.initTEduBoard(classroomOption)
         print("创建课堂 成功, 房间号：${classroomOption.classId}")
         ticCallback.onSuccess(1)
-//        mTicManager.createClassroom(classroomOption.classId,
-//            classroomOption.classScene, //如果使用大房间，请使用 TIC_CLASS_SCENE_LIVE
-//            object : TICCallback<Any> {
-//                override fun onSuccess(data: Any) {
-//
-//
-//                }
-//                override fun onError(module: String, errCode: Int, errMsg: String) {
-//                    if (errCode == 10021) {
-//                        print("该课堂已被他人创建，请\"加入课堂\"")
-//                        mTicManager.joinClassroom(classroomOption, ticCallback)
-//                    } else if (errCode == 10025) {
-//                        print("该课堂已创建，请\"加入课堂\"")
-//                        mTicManager.joinClassroom(classroomOption, ticCallback)
-//                    } else {
-//                        val msg="创建课堂失败, 房间号：${classroomOption.classId} errCode:$errCode msg:$errMsg"
-//                        print(msg)
-//                        ticCallback.onError(module,errCode,msg)
-//                    }
-//                }
-//            })
     }
 
     fun quitClassroom() {
         boardAware?.destroy()
+        mTicManager.quitClassroom(true,object :TICCallback<Any>{
+            override fun onSuccess(data: Any) {
+                removeBoardView()
+            }
+            override fun onError(module: String, errCode: Int, errMsg: String) {
+                Log.e("mother fucker","退出白板失败:$errCode  $errMsg")
+                removeBoardView()
+            }
+        })
 //        rtcAware?.destroy()
         flutterApi?.exitRoom(PigeonPlatformMessage.DataModel().apply {
             this.code=1
