@@ -39,6 +39,8 @@ abstract class PigeonApi {
   @async
   DataModel receiveData(ReceivedData params);
 
+  @async
+  void reset();
 }
 
 

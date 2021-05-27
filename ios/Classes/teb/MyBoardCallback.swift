@@ -32,7 +32,7 @@ public class  MyBoardCallback :NSObject, TEduBoardDelegate{
     }
     
     public func onTEBSyncData(_ data: String!) {
-        
+        boardAwareCallback.onTEBSyncData(data: data)
     }
     
     public func onTEBUndoStatusChanged(_ canUndo: Bool) {

@@ -11,5 +11,5 @@ protocol BoardAwareInterface {
     func setCanRedo(_ canredo: Bool)
     func addFile(_ fileId: String?) -> TEduBoardFileInfo?
     func onTextComponentStatusChange(_ id: String?, _ status: String?)
-
+    func onTEBSyncData(data: String)
 }

@@ -29,6 +29,7 @@ public class AwareManager : NSObject, BoardAwareInterface{
             let data = FLTReceivedData()
             data.data = FlutterStandardTypedData(bytes: d!)
             data.extension=ext
+            print("receive嘿嘿嘿嘿嘿嘿嘿嘿呵呵呵呵呵呵::🙄::\(data.data)")
             self.flutterApi?.receive(data, completion: {model,_ in
                 if(model.code?.intValue == -1){
                     print("同步失败了:${it.msg}")
@@ -55,7 +56,25 @@ public class AwareManager : NSObject, BoardAwareInterface{
         classroomOption.boardDelegate?.onTEBInit() ///腾讯的Android和iOS回调不同步,这里手动调用,保证在业务层处理逻辑是一样的.反正回调中我会判断画板是否已经准备就绪的
         ticCallback(TICModule.TICMODULE_IMSDK,1,"创建课堂 成功, 房间号 \(classroomOption.classId)")
     }
+    
+    func onTEBSyncData(data: String) {
+        let model = FLTReceivedData()
+        model.data = FlutterStandardTypedData(bytes: data.data(using: .utf8)!)
+        model.extension="TXWhiteBoardExt"
+        print("receive嘿嘿嘿嘿嘿嘿嘿嘿呵呵呵呵呵呵::🙄😀::\(model.data)")
+        self.flutterApi?.receive(model, completion: {model,_ in
+            if(model.code?.intValue == -1){
+                print("同步失败了:${it.msg}")
+            }
+        })
+    }
+    
+    func reset(){
+        boardAware?.reset()
+    }
+    
     func quitClassroom() {
+    
         boardAware?.destroy()
         mTicManager.quitClassroom(true,callback: {_, errCode, errMsg in
             if(errCode == -1){

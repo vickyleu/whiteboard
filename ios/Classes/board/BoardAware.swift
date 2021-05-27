@@ -10,4 +10,9 @@ public class BoardAware{
     func destroy() {
         mBoard?.reset()
     }
+    func reset(){
+        mBoard?.clearDraws()
+        mBoard?.reset()
+        mBoard?.refresh()
+    }
 }

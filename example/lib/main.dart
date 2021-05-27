@@ -67,7 +67,7 @@ class _MyAppState extends State<MyApp> {
           final conversation = await TencentImSDKPlugin.v2TIMManager.getConversationManager().getConversation(conversationID: "group_$classId");
           String receive = new String.fromCharCodes(arg.data);
           await TencentImSDKPlugin.v2TIMManager.v2TIMMessageManager
-              .sendCustomMessage(data: receive, receiver: "$classId", groupID: "$classId",extension: "TXWhiteBoardExt",
+              .sendCustomMessage(data: receive, receiver: null, groupID: "$classId",extension: "TXWhiteBoardExt",
             priority: 1,isExcludedFromUnreadCount:true,
             // offlinePushInfo: OfflinePushInfo()
           );
@@ -114,13 +114,17 @@ class _MyAppState extends State<MyApp> {
       if(value.code!=-1){
         final enterRoom= (){
           TencentImSDKPlugin.v2TIMManager.joinGroup(groupID:  "$groupId", message: "board group$groupId").then((value){
-            widget._whiteboardController.joinClass(groupId);
+            widget._whiteboardController.joinClass(groupId).then((value){
+             Future.delayed(Duration(milliseconds: 5000)).then((value){
+               widget._whiteboardController.reset();
+             });
+            });
           });
         };
         TencentImSDKPlugin.v2TIMManager.createGroup(groupType:
         // "AVChatRoom"
-        "Meeting"
-        // "Public"
+        // "Meeting"
+        "Public"
             , groupName: "interact group",groupID: "$groupId").then((value){
           enterRoom();
 

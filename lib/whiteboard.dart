@@ -100,15 +100,18 @@ class PigeonFlutterApiImpl extends PigeonFlutterApi {
 
 
 class WhiteboardController {//extends Listener
-  PigeonApi api =  PigeonApi();
+  PigeonApi _api =  PigeonApi();
 
   Set<Function>_createdListener=Set();
   bool _isCreated=false;
   _WhiteboardState _state;
   PigeonFlutterApi _pigeonFlutterApi;
 
+  Future<void> reset() {
+    _api.reset();
+  }
   Future<DataModel> joinClass(int classId) {
-    return api.joinClass(JoinClassRequest()..roomId=classId).then((value){
+    return _api.joinClass(JoinClassRequest()..roomId=classId).then((value){
       if(value.code==-1){
         print("joinClass # ${value.msg}");
       }else{
@@ -120,7 +123,7 @@ class WhiteboardController {//extends Listener
     });
   }
   Future<DataModel> preJoinClass(int appid, String userId, String userSig) {
-    return api.preJoinClass(
+    return _api.preJoinClass(
         PreJoinClassRequest()
           ..appId=appid
           ..userId=userId
@@ -151,7 +154,7 @@ class WhiteboardController {//extends Listener
   }
 
   void dispose() {
-    api.quitClass();
+    _api.quitClass();
     _pigeonFlutterApi=null;
     _isCreated=false;
     PigeonFlutterApi.setup(null);
@@ -170,7 +173,7 @@ class WhiteboardController {//extends Listener
   }
 
   void receiveMsg(Uint8List msg) {
-    api.receiveData(ReceivedData()..data=msg);
+    _api.receiveData(ReceivedData()..data=msg);
   }
 
 

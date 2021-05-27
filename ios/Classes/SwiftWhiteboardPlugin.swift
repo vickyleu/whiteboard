@@ -39,7 +39,7 @@ public class SwiftWhiteboardPlugin: NSObject, FlutterPlugin,FLTPigeonApi {
         let model = FLTDataModel.init()
         if(arg != nil){
             let initParam = TEduBoardInitParam.init()
-            initParam.timSync = true;
+            initParam.timSync = false;
             initParam.brushColor = UIColor.init(red: 255, green: 0, blue: 0, alpha: 1.0)
             initParam.smoothLevel = 0 //用于指定笔迹平滑级别，默认值0.1，取值[0, 1]
             let classroomOption = TICClassroomOption.init()
@@ -76,9 +76,15 @@ public class SwiftWhiteboardPlugin: NSObject, FlutterPlugin,FLTPigeonApi {
         model.msg = "退出课堂成功"
         completion(model,nil)
     }
+    
+    public func reset(_ completion: @escaping (FlutterError?) -> Void) {
+        awareManager.reset()
+        completion(nil)
+    }
 
     public func receive(_ arg: FLTReceivedData?, completion: @escaping (FLTDataModel?, FlutterError?) -> Void) {
         if(arg?.data != nil){
+            print("receive嘿嘿嘿嘿嘿嘿嘿嘿呵呵呵呵呵呵::\(arg!.data!)")
             let byte = [UInt8](arg!.data!.data)
             awareManager.receiveData(data:byte) { (module, errCode, errMsg) in
                 if(errCode == 1){

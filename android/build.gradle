@@ -91,7 +91,7 @@ dependencies {
     //TRTC
     implementation 'com.tencent.liteav:LiteAVSDK_TRTC:8.2.9809'
     //IMSDK
-//    compileOnly 'com.tencent.imsdk:imsdk-smart:5.3.425'
+    compileOnly 'com.tencent.imsdk:imsdk-smart:5.3.425'
 //    compileOnly 'com.tencent.imsdk:imsdk:4.8.50'
     implementation 'com.tencent.tiw.logger:TIWLogger:1.0.1.28'
 
