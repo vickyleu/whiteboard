@@ -27,6 +27,10 @@ class ReceivedData{
   String extension;
 }
 
+class StringData{
+  String string;
+}
+
 ///Flutter持有的原生平台通道,Flutter调用原生方法
 @HostApi()
 abstract class PigeonApi {
@@ -41,6 +45,9 @@ abstract class PigeonApi {
 
   @async
   void reset();
+
+  @async
+  void addBackgroundImage(StringData url);
 }
 
 
@@ -53,6 +60,7 @@ abstract class PigeonFlutterApi {
   @async
   DataModel receiveData(ReceivedData params);
 
+  void historySyncCompleted();
 }
 
 

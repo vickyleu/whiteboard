@@ -8,7 +8,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:whiteboard/pigeon/PigeonPlatformMessage.dart';
-
+import 'package:photo_view/photo_view.dart';
 
 class Whiteboard extends StatefulWidget{
   final WhiteboardController controller;
@@ -23,6 +23,8 @@ class Whiteboard extends StatefulWidget{
 
 class _WhiteboardState extends State<Whiteboard>{
   static const String _uniqueIdentifier = "plugins.whiteboard/_001";
+  PhotoViewController _photoViewController=PhotoViewController();
+  ValueNotifier<bool> scaleGesture=ValueNotifier(false);
   @override
   void initState(){
     widget.controller._state=this;
@@ -33,9 +35,11 @@ class _WhiteboardState extends State<Whiteboard>{
   @override
   Widget build(BuildContext context) {
     final Map<String, dynamic> creationParams = <String, dynamic>{};
+    Widget nativeView;
     if(Platform.isIOS){
-      return UiKitView(
+      nativeView= UiKitView(
         viewType: _uniqueIdentifier,
+        hitTestBehavior: PlatformViewHitTestBehavior.opaque,
         layoutDirection: TextDirection.ltr,
         creationParams: creationParams,
         creationParamsCodec: const StandardMessageCodec(),
@@ -44,13 +48,13 @@ class _WhiteboardState extends State<Whiteboard>{
         },
       );
     }else if(Platform.isAndroid){
-      return PlatformViewLink(
+      nativeView = PlatformViewLink(
         viewType: _uniqueIdentifier,
         surfaceFactory:(BuildContext context, PlatformViewController controller) {
           return AndroidViewSurface(
             controller: controller,
-            gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
             hitTestBehavior: PlatformViewHitTestBehavior.opaque,
+            gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
           );
         },
         onCreatePlatformView: (PlatformViewCreationParams params) {
@@ -70,6 +74,111 @@ class _WhiteboardState extends State<Whiteboard>{
     }else{
       return Container();
     }
+
+
+    return LayoutBuilder(
+      builder: (context,cc){
+        assert(cc.maxWidth!=double.infinity&&cc.maxHeight!=double.infinity,"必须约束宽高");
+
+        final ccRatio=cc.maxWidth/cc.maxHeight;
+        if(ccRatio==1.765){
+
+        }else if(ccRatio>1.765){
+          final height=cc.maxHeight;
+
+        }else{
+
+        }
+        // final vw = image.width.toDouble();
+        // final vh = image.height.toDouble();
+        // final sw = image.swidth.toDouble();
+        // final sh = image.sheight.toDouble();
+        // var aspectRatio = vw / vh;
+        // var scale = 0.0;
+        // if (vw > 0 && vh > 0) {
+        //   if (vw * sh > sw * vh) {
+        //     scale = (sw * vh / vw) / vh;
+        //   } else if (vw * sh < sw * vh) {
+        //     scale = (sh * vw / vh) / vw;
+        //   } else {
+        //     scale = sw / vw;
+        //   }
+        // }
+        // yield Center(
+        //     child: Container(
+        //     width: vw * scale,
+        //     height: vh * scale,
+        //     child: Center(
+        //     child: AspectRatio(
+        //     aspectRatio: aspectRatio,
+        //     child: ImageViewLocal(
+        //     placeHolder: "",
+        //     uint8list: image.image,
+        //     height: image.height.toDouble(),
+        // size: image.width.toDouble(),
+        // // height: cc.maxHeight.toDouble(),
+        // // size: cc.maxWidth.toDouble(),
+        // fit: BoxFit.fitHeight,
+        // ),
+        // ),
+        // ),
+        // ),
+        // );
+        return Container(
+          width: double.infinity,
+          child: AspectRatio(
+            aspectRatio: 1.765,
+            child: Container(
+              child: IgnorePointer(
+                child: nativeView,
+                ignoring: false,
+              ),
+            ),
+          ),
+        );
+        return PhotoView.customChild(
+          maxScale: 3.0,
+          minScale: 1.0,
+          disableGestures: false,
+          controller: _photoViewController,
+          gestureDetectorBehavior: HitTestBehavior.deferToChild,
+          child:ValueListenableBuilder<bool>(
+              valueListenable: scaleGesture,
+              builder: (context,value,_){
+                print("跑到这里来没有$value");
+                return ClipRect(
+                  child: Container(
+                    height: cc.maxHeight,
+                    width: cc.maxWidth,
+                    child: Container(
+                      width: double.infinity,
+                      child: AspectRatio(
+                        aspectRatio: 1.765,
+                        child: Container(
+                          child: IgnorePointer(
+                            child: nativeView,
+                            ignoring: value,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }
+          ),
+          customSize: Size(cc.maxWidth,cc.maxHeight),
+        );
+        return RawGestureDetector(
+          // child: ,
+          behavior: HitTestBehavior.deferToChild,
+          gestures: {
+            _MultipleScaleGestureRecognizer: _multiTouch(cc),
+            DoubleTapGestureRecognizer: _doubleTap(),
+          },
+        );
+      },
+    );
+
   }
 
   @override
@@ -77,14 +186,113 @@ class _WhiteboardState extends State<Whiteboard>{
     widget.controller.dispose();
     super.dispose();
   }
+
+  double lastScale=1.0;
+  GestureRecognizerFactoryWithHandlers<_MultipleScaleGestureRecognizer> _multiTouch(BoxConstraints cc) {
+    return GestureRecognizerFactoryWithHandlers<_MultipleScaleGestureRecognizer>(
+          () => _MultipleScaleGestureRecognizer(),
+          (_MultipleScaleGestureRecognizer instance) {
+        Offset updatePosition;
+        bool breakFut=false;
+        instance
+          ..onStart = (d){
+            if(d.pointerCount>=2){
+              updatePosition=_photoViewController.position;
+              scaleGesture.value=true;
+              breakFut=true;
+            }
+          }
+          ..onUpdate =  (ScaleUpdateDetails d){
+            if(d.pointerCount>=2){
+              final initialWidth=cc.maxWidth;
+              final initialHeight=cc.maxHeight;
+              final wGap=(initialWidth/2.0)-d.localFocalPoint.dx;
+              final hGap=(initialHeight/2.0)-d.localFocalPoint.dy;
+              double distX=wGap*d.horizontalScale;
+              double distY=hGap*d.verticalScale;
+
+              _photoViewController.updateMultiple(
+                position: Offset(
+                    distX+updatePosition.dx,
+                    distY+updatePosition.dy
+                ),
+                scale:d.scale*lastScale,
+                // rotation:d.rotation,
+              );
+              updatePosition=Offset(
+                  distX,
+                  distY
+              );
+            }
+          }
+          ..onEnd =  (d){
+
+            final currentScale=_photoViewController.scale;
+            final currentRotation=_photoViewController.rotation;
+
+            Offset position;
+            double scale;
+            double rotation;
+            if(currentScale<=1.0){///防止
+              position= Offset.zero;
+              scale= 1.0;
+            }
+            if(currentScale>3.0){///防止
+              scale= 3.0;
+            }
+            if(currentRotation!=0){
+              rotation=0;
+            }
+            if(position!=null||rotation!=null){
+              lastScale=scale;
+              _photoViewController.updateMultiple(
+                position:position,
+                scale:scale,
+                rotation:rotation,
+              );
+            }else{
+              lastScale=currentScale;
+            }
+            breakFut=false;
+            Future.delayed(Duration(milliseconds: 400)).then((value){
+              if(breakFut)return;
+              scaleGesture.value=false;
+            });
+          }
+          ..dragStartBehavior = DragStartBehavior.down;
+      },
+    );
+  }
+  GestureRecognizerFactoryWithHandlers<DoubleTapGestureRecognizer> _doubleTap() {
+    return GestureRecognizerFactoryWithHandlers<DoubleTapGestureRecognizer>(
+          () => DoubleTapGestureRecognizer(),
+          (DoubleTapGestureRecognizer instance) {
+        instance
+          ..onDoubleTap = (){
+            final currentScale=_photoViewController.scale;
+            if(currentScale<3.0){
+              if(currentScale%1.0==0){
+                _photoViewController.scale+=1;
+              }else{
+                _photoViewController.scale=3;
+              }
+            }else{
+              _photoViewController.scale=1;
+            }
+          };
+      },
+    );
+  }
 }
 
 typedef Future<void> ExitRoom(DataModel arg);
+typedef void HistorySyncCompleted();
 typedef Future<DataModel> ReceiveData(ReceivedData arg);
 class PigeonFlutterApiImpl extends PigeonFlutterApi {
   ExitRoom exitRoomCallback;
   ReceiveData receiveDataCallback;
-  PigeonFlutterApiImpl({@required this.exitRoomCallback,@required this.receiveDataCallback});
+  HistorySyncCompleted syncCompletedCallback;
+  PigeonFlutterApiImpl({@required this.exitRoomCallback,@required this.receiveDataCallback,@required this.syncCompletedCallback});
   @override
   Future<void> exitRoom(DataModel arg) {
     return exitRoomCallback?.call(arg);
@@ -92,9 +300,13 @@ class PigeonFlutterApiImpl extends PigeonFlutterApi {
 
   @override
   Future<DataModel> receiveData(ReceivedData arg) {
-    print("mother fucker receiveData ${arg?.data}");
     final model = receiveDataCallback?.call(arg);
     return (model!=null)?model:DataModel.decode({"code":-1,"msg":"参数错误"});
+  }
+
+  @override
+  void historySyncCompleted() {
+    this.syncCompletedCallback?.call();
   }
 }
 
@@ -176,5 +388,17 @@ class WhiteboardController {//extends Listener
     _api.receiveData(ReceivedData()..data=msg);
   }
 
+  void addBackgroundImage(String url) {
+    _api.addBackgroundImage(StringData()..string= url);
+  }
 
+
+}
+
+
+class _MultipleScaleGestureRecognizer extends ScaleGestureRecognizer{
+  @override
+  void rejectGesture(int pointer) {
+    acceptGesture(pointer);
+  }
 }

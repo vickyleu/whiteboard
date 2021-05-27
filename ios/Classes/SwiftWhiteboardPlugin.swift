@@ -81,6 +81,13 @@ public class SwiftWhiteboardPlugin: NSObject, FlutterPlugin,FLTPigeonApi {
         awareManager.reset()
         completion(nil)
     }
+    
+    public func addBackgroundImage(_ arg: FLTStringData?, completion: @escaping (FlutterError?) -> Void) {
+        if(arg?.string != nil){
+            awareManager.addBackgroundImage(url:arg!.string!)
+        }
+        completion(nil)
+    }
 
     public func receive(_ arg: FLTReceivedData?, completion: @escaping (FLTDataModel?, FlutterError?) -> Void) {
         if(arg?.data != nil){

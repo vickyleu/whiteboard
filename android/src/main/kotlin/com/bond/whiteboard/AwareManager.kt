@@ -69,6 +69,9 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
         ticCallback.onSuccess(1)
     }
 
+    fun reset() {
+        boardAware?.reset()
+    }
     fun quitClassroom() {
         boardAware?.destroy()
         mTicManager.quitClassroom(true,object :TICCallback<Any>{
@@ -109,6 +112,7 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
         //
     }
     override fun onTEBHistroyDataSyncCompleted() {
+        flutterApi?.historySyncCompleted(null)
         val board = boardAware?.mBoard ?: return
         val currentBoard: String = board.currentBoard;
         val currentFile = board.currentFile
@@ -134,6 +138,12 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
         return null
     }
 
+
+    fun addBackgroundImage(url: String) {
+        boardAware?.mBoard?.addBoard(url)
+    }
+
+
     override fun onTextComponentStatusChange(id: String?, status: String?) {
         //
     }
@@ -147,7 +157,7 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
             if(it.code.toInt()==-1){
                 print("同步失败了:${it.msg}")
             }else{
-               val wtf : TEduBoardController = boardAware?.mBoard?:return@receiveData
+                val wtf : TEduBoardController = boardAware?.mBoard?:return@receiveData
 //                wtf.addAckData(data) //// 🙄🙄🙄🙄🙄🙄🙄❓❓❓❓❓❓❓❓❓❓🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃
             }
         }
@@ -159,6 +169,5 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
     fun receiveIds(id: String, type: Int) {
 //        rtcAware?.mImgsFid
     }
-
 
 }

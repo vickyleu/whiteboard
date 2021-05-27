@@ -11,10 +11,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  photo_view: any
   crypto: "3.0.1"
 
 dev_dependencies:
   pigeon:  "0.2.1"
+
 
 flutter:
   plugin:

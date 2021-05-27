@@ -1,17 +1,21 @@
+import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
-
 import 'package:flutter/services.dart';
 import 'package:tencent_im_sdk_plugin/enum/V2TimAdvancedMsgListener.dart';
 import 'package:tencent_im_sdk_plugin/enum/V2TimSDKListener.dart';
 import 'package:tencent_im_sdk_plugin/enum/log_level.dart';
 import 'package:tencent_im_sdk_plugin/manager/v2_tim_manager.dart';
-import 'package:tencent_im_sdk_plugin/manager/v2_tim_message_manager.dart';
-import 'package:tencent_im_sdk_plugin/models/v2_tim_user_full_info.dart';
-import 'package:tencent_im_sdk_plugin/models/v2_tim_value_callback.dart';
 import 'package:tencent_im_sdk_plugin/tencent_im_sdk_plugin.dart';
+import 'package:tencent_trtc_cloud/trtc_cloud.dart';
+import 'package:tencent_trtc_cloud/trtc_cloud_def.dart';
+import 'package:tencent_trtc_cloud/trtc_cloud_listener.dart';
+import 'package:tencent_trtc_cloud/trtc_cloud_video_view.dart';
+import 'package:tencent_trtc_cloud/tx_audio_effect_manager.dart';
+import 'package:tencent_trtc_cloud/tx_beauty_manager.dart';
+import 'package:tencent_trtc_cloud/tx_device_manager.dart';
 import 'package:whiteboard/UserSigGenerate.dart';
 import 'package:whiteboard/pigeon/PigeonPlatformMessage.dart';
 import 'package:whiteboard/whiteboard.dart';
@@ -22,20 +26,25 @@ void main() {
 
 class MyApp extends StatefulWidget {
   WhiteboardController _whiteboardController=WhiteboardController();
+  //TRTC
+  TRTCCloud trtcCloud;
+  TXDeviceManager txDeviceManager;
+  TXBeautyManager txBeautyManager;
+  TXAudioEffectManager txAudioManager;
+
   MyApp();
   @override
   _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-
+  final userId="1008611";
+  final remoteUserId="1008612";
+  final userList=List<Map>.empty(growable: true);
   @override
   void initState() {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeLeft,
-    ]);
     initSDK();
+
     super.initState();
   }
 
@@ -44,15 +53,28 @@ class _MyAppState extends State<MyApp> {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
-    widget._whiteboardController.dispose();
+    // widget._whiteboardController.dispose();
     super.dispose();
   }
+  Future<void> initTRTC(int appID,String userId,String userSig,int classId) async {
+    widget.trtcCloud = await TRTCCloud.sharedInstance();
+    // 获取设备管理模块
+    widget.txDeviceManager = widget.trtcCloud.getDeviceManager();
+    // 获取美颜管理对象
+    widget.txBeautyManager = widget.trtcCloud.getBeautyManager();
+    // 获取音效管理类 TXAudioEffectManager
+    widget.txAudioManager = widget.trtcCloud.getAudioEffectManager();
+    // 注册事件回调
+    widget.trtcCloud.registerListener(onRtcListener);
+    widget.trtcCloud.setGSensorMode(TRTCCloudDef.TRTC_GSENSOR_MODE_UIAUTOLAYOUT);
 
+    enterRoom(appID,userId,userSig,classId);
+  }
   initSDK() async {
     WidgetsFlutterBinding.ensureInitialized();
     final secret="f31f05a9292434dd66ff368eed72647029daca9e9237fec99aa6669904d8d117";
     final appid=1400501664;
-    final userId="1008611";
+
     final int classId= 123;
     V2TIMManager timManager = TencentImSDKPlugin.v2TIMManager;
     widget._whiteboardController.addPigeonApiListener(new PigeonFlutterApiImpl(
@@ -71,8 +93,10 @@ class _MyAppState extends State<MyApp> {
             priority: 1,isExcludedFromUnreadCount:true,
             // offlinePushInfo: OfflinePushInfo()
           );
-          return null;
-        }
+          return DataModel()..code=1
+            ..msg="接收成功了";
+        },
+        syncCompletedCallback: _whiteboardSyncCompleted
     ));
     await timManager.initSDK(
       sdkAppID: appid,
@@ -90,7 +114,7 @@ class _MyAppState extends State<MyApp> {
               if (res.code == 0) {
                 print("======腾讯IM登录成功=====${res}");
                 ///设置离线消息通道,businessID为腾讯后台生成的id,必须是登录成功后设置,不然无效
-
+                initTRTC(appid, userId, pwdStr,classId);
                 _register(appid, pwdStr, userId,classId);
               } else {
                 print("======腾讯IM登录失败=====${res}");
@@ -99,14 +123,24 @@ class _MyAppState extends State<MyApp> {
           }
           _login();
         },
-        onKickedOffline: (){
-
-        },
+        onKickedOffline: _whiteboardSyncCompleted,
         onConnectFailed: (code,msg){
 
         },
       ),
     );
+  }
+  void enterRoom(int appID,String userId,String userSig,int classId) {
+    widget.trtcCloud.enterRoom(
+        TRTCParams(
+            sdkAppId: appID, //应用Id
+            userId: userId, // 用户Id
+            userSig: userSig, // 用户签名
+            roomId: classId), //房间Id
+        TRTCCloudDef.TRTC_APP_SCENE_VIDEOCALL);
+  }
+  void _whiteboardSyncCompleted(){
+    widget._whiteboardController.reset();
   }
 
   _created(int groupId,int appid,String userId,String userSig){
@@ -114,11 +148,7 @@ class _MyAppState extends State<MyApp> {
       if(value.code!=-1){
         final enterRoom= (){
           TencentImSDKPlugin.v2TIMManager.joinGroup(groupID:  "$groupId", message: "board group$groupId").then((value){
-            widget._whiteboardController.joinClass(groupId).then((value){
-             Future.delayed(Duration(milliseconds: 5000)).then((value){
-               widget._whiteboardController.reset();
-             });
-            });
+            widget._whiteboardController.joinClass(groupId);
           });
         };
         TencentImSDKPlugin.v2TIMManager.createGroup(groupType:
@@ -161,18 +191,208 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    ValueKey remoteKey = ValueKey(remoteUserId);
+    ValueKey selfkey = ValueKey(userId);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft
+    ]);
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: Center(
-          child: Whiteboard(
-            controller: widget._whiteboardController,
-          ),
+        body: Column(
+          children: [
+            Container(
+              height: 50,
+              child: Row(
+                children:()sync*{
+                  yield Container(
+                    key: selfkey,
+                    width: 120,
+                    height: 200,
+                    color: Colors.black,
+                    child: TRTCCloudVideoView(
+                        key: selfkey,
+                        onViewCreated: (viewId) {
+                          widget.trtcCloud.startLocalPreview(true, viewId);
+                        }),
+                  );
+                  yield Container(
+                    key: remoteKey,
+                    width: 120,
+                    height: 200,
+                    color: Colors.black,
+                    child: TRTCCloudVideoView(
+                        key: remoteKey,
+                        onViewCreated: (viewId) {
+                          widget.trtcCloud.startRemoteView(
+                              remoteUserId,
+                              // remoteMap['type'] == 'video'
+                              //     ?
+                              // TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_SMALL
+                              //     :
+                              TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_SUB,
+                              viewId);
+                        }),
+                  );
+                }().toList(),
+              ),
+            ),
+            Expanded(child: Container(
+              color: Color(1090938470655),
+              padding: EdgeInsets.only(top: 10,bottom: 10),
+              child: Center(
+                child: Whiteboard(
+                  controller: widget._whiteboardController,
+                ),
+              ),
+            )),
+            SafeArea(child: Container(
+              margin: EdgeInsets.only(top: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: ()sync*{
+                  yield* {
+                    "蒜头王八\nStanding By":"http://5b0988e595225.cdn.sohucs.com/images/20181205/cdbf0f53bce34a45a85f3ef2702b74e2.jpeg",
+                    "Elon Marx\nStanding By":"https://5b0988e595225.cdn.sohucs.com/q_70,c_zoom,w_640/images/20180409/3ba0912dbd894d9fb25ca074046ee4f4.jpeg"
+                  }.entries
+                      .map((value)=>
+                      Expanded(child: Center(
+                        child: CupertinoButton(
+                            minSize: 0,
+                            padding: EdgeInsets.zero,
+                            child: Container(
+                              constraints: BoxConstraints(maxWidth: 100,maxHeight: 60),
+                              decoration: BoxDecoration(
+                                color: Colors.yellow,
+                                borderRadius:BorderRadius.circular(10),
+
+                              ),
+                              child: Center(
+                                child: Text(value.key,textAlign: TextAlign.center,),
+                              ),
+                            ), onPressed: (){
+                          widget._whiteboardController.reset();
+                          widget._whiteboardController.addBackgroundImage(value.value);
+                        }),
+                      ),flex: 1,));
+                }().toList(),
+              ),
+              height: 50,
+            ),top: false,)
+          ],
         ),
       ),
     );
   }
+
+
+  /// 事件回调
+  onRtcListener(type, param) {
+    print("type::${type}  param:${param}");
+    if (userList.length >= 2) {
+      return;
+    }
+    if (type == TRTCCloudListener.onError) {
+      showErrordDialog(param['errMsg']);
+    }
+    if (type == TRTCCloudListener.onEnterRoom) {
+    }
+    // 远端用户进房
+    if (type == TRTCCloudListener.onRemoteUserEnterRoom) {
+      print("===== 远端用户进房 ===${param}");
+      //当自己是电话发起者需要统计电话时长
+      if(widget.isCallIn != "1"){
+        DateTime now = new DateTime.now();
+        startStamp = (now.millisecondsSinceEpoch*0.001).floor();
+      }
+
+      userList.add({'userId': param, 'type': 'video', 'visible': false});
+      screenUserList = getScreenList(userList);
+      if(userList.length <=1 ){
+        return ;
+      }else{
+        isEnter = true;
+      }
+      this.setState(() {});
+      meetModel.setList(userList);
+    }
+    // 远端用户离开房间
+    if (type == TRTCCloudListener.onRemoteUserLeaveRoom) {
+      print("这里接受了事件2");
+      print("====用户退出了房间");
+      if(widget.isCallIn != "1") {
+        DateTime now = new DateTime.now();
+        int endTime = (now.millisecondsSinceEpoch*0.001).floor();
+        int duration = endTime-startStamp;
+        sendMsgToAnother(duration);
+      }
+
+      trtcCloud.exitRoom();
+      Application.router.pop(context);
+      // String userId = param['userId'];
+      // for (var i = 0; i < userList.length; i++) {
+      //   if (userList[i]['userId'] == userId) {
+      //     userList.removeAt(i);
+      //   }
+      // }
+      // screenUserList = getScreenList(userList);
+      // this.setState(() {});
+      // meetModel.setList(userList);
+    }
+    //远端用户是否存在可播放的主路画面（一般用于摄像头）
+    if (type == TRTCCloudListener.onUserVideoAvailable) {
+      String userId = param['userId'];
+      // 根据状态对视频进行开启和关闭
+      if (param['available']) {
+        for (var i = 0; i < userList.length; i++) {
+          if (userList[i]['userId'] == userId &&
+              userList[i]['type'] == 'video') {
+            userList[i]['visible'] = true;
+          }
+        }
+      } else {
+        for (var i = 0; i < userList.length; i++) {
+          if (userList[i]['userId'] == userId &&
+              userList[i]['type'] == 'video') {
+            trtcCloud.stopRemoteView(
+                userId, TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_SMALL);
+            userList[i]['visible'] = false;
+          }
+        }
+      }
+      screenUserList = getScreenList(userList);
+      this.setState(() {});
+      meetModel.setList(userList);
+    }
+
+    //辅流监听
+    if (type == TRTCCloudListener.onUserSubStreamAvailable) {
+      String userId = param["userId"];
+      //视频可用
+      if (param["available"]) {
+        userList.add({'userId': userId, 'type': 'subStream', 'visible': true});
+      } else {
+        for (var i = 0; i < userList.length; i++) {
+          if (userList[i]['userId'] == userId &&
+              userList[i]['type'] == 'subStream') {
+            trtcCloud.stopRemoteView(
+                userId, TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_SUB);
+            userList.removeAt(i);
+          }
+        }
+      }
+      screenUserList = getScreenList(userList);
+      this.setState(() {});
+      meetModel.setList(userList);
+    }
+  }
+
+  showErrordDialog(String error){}
+
+
+
+
 }
 

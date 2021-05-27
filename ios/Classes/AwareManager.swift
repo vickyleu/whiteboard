@@ -72,7 +72,9 @@ public class AwareManager : NSObject, BoardAwareInterface{
     func reset(){
         boardAware?.reset()
     }
-    
+    func addBackgroundImage(url:String){
+        boardAware?.mBoard?.addBoard(withBackgroundImage: url)
+    }
     func quitClassroom() {
     
         boardAware?.destroy()
@@ -108,6 +110,9 @@ public class AwareManager : NSObject, BoardAwareInterface{
 
     /////
     func onTEBHistroyDataSyncCompleted() {
+        flutterApi?.historySyncCompleted{_ in
+            
+        }
         guard let board = boardAware?.mBoard else { return }
         guard let currentBoard = board.getCurrentBoard() else { return }
         let currentFile = board.getCurrentFile()

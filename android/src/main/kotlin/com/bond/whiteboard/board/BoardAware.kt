@@ -13,4 +13,10 @@ class BoardAware(private val context:Context) {
     fun destroy() {
         mBoard?.reset()
     }
+
+    fun reset() {
+        mBoard?.clear(true)
+        mBoard?.reset()
+        mBoard?.refresh()
+    }
 }

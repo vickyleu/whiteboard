@@ -122,6 +122,21 @@ class WhiteboardPlugin: FlutterPlugin,ActivityAware {
         })
       }
     }
+
+    override fun reset(result: PigeonPlatformMessage.Result<Void>?) {
+      awareManager.reset()
+      result?.success(null)
+    }
+
+    override fun addBackgroundImage(
+      arg: PigeonPlatformMessage.StringData?,
+      result: PigeonPlatformMessage.Result<Void>?
+    ) {
+      if(arg!=null){
+        awareManager.addBackgroundImage(arg.string)
+      }
+      result?.success(null)
+    }
   }
 
 
