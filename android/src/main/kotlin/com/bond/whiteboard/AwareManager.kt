@@ -1,7 +1,12 @@
 package com.bond.whiteboard
 
+import android.graphics.Color
+import android.os.Build
 import android.util.Log
+import android.webkit.WebView
 import android.widget.FrameLayout
+import android.widget.ImageView
+import androidx.annotation.ColorInt
 import com.bond.whiteboard.board.BoardAware
 import com.bond.whiteboard.nativeView.NativeViewLink
 import com.bond.whiteboard.teb.BoardAwareInterface
@@ -56,6 +61,7 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
             ticCallback.onError(MODULE_IMSDK,-1,msg)
             return
         }
+        board.globalBackgroundColor= TEduBoardController.TEduBoardColor(Color.TRANSPARENT)
         boardAware?.mBoard = board
         //1、设置白板的回调
         boardAware?.mBoardCallback = MyBoardCallback(this)
@@ -71,6 +77,9 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
 
     fun reset() {
         boardAware?.reset()
+    }
+    fun setBackgroundColor(@ColorInt color:Int) {
+        boardAware?.setBackgroundColor(color)
     }
     fun quitClassroom() {
         boardAware?.destroy()
@@ -120,7 +129,15 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
     }
 
     override fun addBoardView() {
-        val boardView= boardAware?.mBoard?.boardRenderView ?:return
+        val board= boardAware?.mBoard ?:return
+        board.backgroundColor= TEduBoardController.TEduBoardColor(Color.TRANSPARENT)
+        val boardView= board.boardRenderView ?:return
+        val webView = boardView as WebView
+        val setting = webView.settings
+         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP) {
+             setting.mixedContentMode = 0;
+         }
+
         val layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         nativeViewLink?.addView(boardView,layoutParams)
     }
@@ -140,7 +157,8 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
 
 
     fun addBackgroundImage(url: String) {
-        boardAware?.mBoard?.addBoard(url)
+        boardAware?.mBoard?.setBackgroundImage(url, TEduBoardController.TEduBoardImageFitMode.TEDU_BOARD_IMAGE_FIT_MODE_CENTER)
+//        boardAware?.mBoard?.addBoard(url)
     }
 
 

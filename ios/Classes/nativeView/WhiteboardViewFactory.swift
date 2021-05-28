@@ -35,8 +35,6 @@ public class WhiteboardViewFactory : NSObject, FlutterPlatformViewFactory,Native
         guard let root = nativeViewContainer?.rootView else {
             return
         }
-       
-        view.backgroundColor = UIColor.red
         root.addSubview(view)
         view.mas_makeConstraints { (make) in
             layoutParam(root,make)

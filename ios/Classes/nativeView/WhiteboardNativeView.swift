@@ -18,6 +18,7 @@ public class WhiteboardNativeView : NSObject, FlutterPlatformView {
     ) {
         super.init()
         rootView.frame = frame //CGRect(x:0, y: 0, width:0, height:0)
+        rootView.backgroundColor=UIColor.clear
         rootView.tag=Int(viewId)
     }
     

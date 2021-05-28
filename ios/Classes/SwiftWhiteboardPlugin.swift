@@ -81,10 +81,16 @@ public class SwiftWhiteboardPlugin: NSObject, FlutterPlugin,FLTPigeonApi {
         awareManager.reset()
         completion(nil)
     }
+    public func setBackgroundColor(_ arg: FLTStringData?, completion: @escaping (FlutterError?) -> Void) {
+        if(arg?.value != nil){
+            awareManager.setBackgroundColor(UIColor.init(hex: arg!.value!)!)
+        }
+        completion(nil)
+    }
     
     public func addBackgroundImage(_ arg: FLTStringData?, completion: @escaping (FlutterError?) -> Void) {
-        if(arg?.string != nil){
-            awareManager.addBackgroundImage(url:arg!.string!)
+        if(arg?.value != nil){
+            awareManager.addBackgroundImage(url:arg!.value!)
         }
         completion(nil)
     }

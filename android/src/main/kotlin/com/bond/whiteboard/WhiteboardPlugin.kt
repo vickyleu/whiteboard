@@ -1,5 +1,6 @@
 package com.bond.whiteboard
 
+import android.graphics.Color
 import android.util.Log
 import androidx.annotation.NonNull
 import com.bond.whiteboard.nativeView.WhiteboardViewFactory
@@ -128,12 +129,20 @@ class WhiteboardPlugin: FlutterPlugin,ActivityAware {
       result?.success(null)
     }
 
+    override fun setBackgroundColor(
+      arg: PigeonPlatformMessage.StringData?, result: PigeonPlatformMessage.Result<Void>?) {
+      if(arg!=null){
+        awareManager.setBackgroundColor(Color.parseColor(arg.value))
+      }
+      result?.success(null)
+    }
+
     override fun addBackgroundImage(
       arg: PigeonPlatformMessage.StringData?,
       result: PigeonPlatformMessage.Result<Void>?
     ) {
       if(arg!=null){
-        awareManager.addBackgroundImage(arg.string)
+        awareManager.addBackgroundImage(arg.value)
       }
       result?.success(null)
     }

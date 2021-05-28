@@ -11,6 +11,7 @@ class WhiteboardNativeView(val context: Context?, val viewId: Int) : PlatformVie
     var rootView = FrameLayout(context!!)
     init {
         rootView.id=viewId
+        rootView.setBackgroundColor(Color.TRANSPARENT)
     }
     override fun getView(): View {
         return  rootView

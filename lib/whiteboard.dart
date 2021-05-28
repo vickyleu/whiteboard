@@ -320,7 +320,10 @@ class WhiteboardController {//extends Listener
   PigeonFlutterApi _pigeonFlutterApi;
 
   Future<void> reset() {
-    _api.reset();
+   return _api.reset();
+  }
+  Future<void> setBackgroundColor(String color) {
+   return _api.setBackgroundColor(StringData()..value = color);
   }
   Future<DataModel> joinClass(int classId) {
     return _api.joinClass(JoinClassRequest()..roomId=classId).then((value){
@@ -389,7 +392,7 @@ class WhiteboardController {//extends Listener
   }
 
   void addBackgroundImage(String url) {
-    _api.addBackgroundImage(StringData()..string= url);
+    _api.addBackgroundImage(StringData()..value= url);
   }
 
 

@@ -28,7 +28,10 @@ class ReceivedData{
 }
 
 class StringData{
-  String string;
+  String value;
+}
+class IntData{
+  int value;
 }
 
 ///Flutter持有的原生平台通道,Flutter调用原生方法
@@ -42,6 +45,8 @@ abstract class PigeonApi {
   DataModel quitClass();
   @async
   DataModel receiveData(ReceivedData params);
+  @async
+  void setBackgroundColor(StringData color);
 
   @async
   void reset();

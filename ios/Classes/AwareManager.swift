@@ -52,6 +52,7 @@ public class AwareManager : NSObject, BoardAwareInterface{
             ticCallback(TICModule.TICMODULE_IMSDK,-1, "白板初始化不成功")
             return
         }
+        boardController.setGlobalBackgroundColor(UIColor.clear)
         boardAware?.mBoard = boardController
         classroomOption.boardDelegate?.onTEBInit() ///腾讯的Android和iOS回调不同步,这里手动调用,保证在业务层处理逻辑是一样的.反正回调中我会判断画板是否已经准备就绪的
         ticCallback(TICModule.TICMODULE_IMSDK,1,"创建课堂 成功, 房间号 \(classroomOption.classId)")
@@ -72,8 +73,14 @@ public class AwareManager : NSObject, BoardAwareInterface{
     func reset(){
         boardAware?.reset()
     }
+    
+    func setBackgroundColor(_ color:UIColor) {
+        boardAware?.setBackgroundColor(color)
+    }
+    
     func addBackgroundImage(url:String){
-        boardAware?.mBoard?.addBoard(withBackgroundImage: url)
+        boardAware?.mBoard?.setBackgroundImage(url, mode: TEduBoardImageFitMode.TEDU_BOARD_IMAGE_FIT_MODE_CENTER)
+//        boardAware?.mBoard?.addBoard(withBackgroundImage: url)
     }
     func quitClassroom() {
     
@@ -120,8 +127,9 @@ public class AwareManager : NSObject, BoardAwareInterface{
     }
 
     func addBoardView() {
-        guard let boardView = boardAware?.mBoard?.getBoardRenderView() else { return }
-        print("onTeb给点响应啊,妈的  nativeViewLink:\(nativeViewLink)")
+        guard let board = boardAware?.mBoard else { return }
+        board.setBackgroundColor(UIColor.clear)//UIColor.clear
+        guard let boardView = board.getBoardRenderView() else { return }
         nativeViewLink?.addView(boardView) { (root: UIView, make: MASConstraintMaker?) in
             make?.top.equalTo()(root)
             make?.left.equalTo()(root)

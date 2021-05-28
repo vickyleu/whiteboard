@@ -15,4 +15,9 @@ public class BoardAware{
         mBoard?.reset()
         mBoard?.refresh()
     }
+    
+    func setBackgroundColor(_ color:UIColor){
+        mBoard?.setBackgroundColor(color)
+        mBoard?.refresh()
+    }
 }
