@@ -20,6 +20,7 @@ import 'package:tencent_trtc_cloud/tx_device_manager.dart';
 import 'package:whiteboard/UserSigGenerate.dart';
 import 'package:whiteboard/pigeon/PigeonPlatformMessage.dart';
 import 'package:whiteboard/whiteboard.dart';
+import 'package:whiteboard_example/ImageExt.dart';
 
 void main() {
   runApp(App());
@@ -51,6 +52,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final userId="1008611";
   final remoteUserId="1008612";
+  var initialOptionPosition=0;
   final userAvailableMap=HashMap<String,Map>();
   @override
   void initState() {
@@ -156,16 +158,16 @@ class _MyAppState extends State<MyApp> {
             userSig: userSig, // 用户签名
             roomId: classId), //房间Id
         TRTCCloudDef.TRTC_APP_SCENE_VIDEOCALL).then((value){
-          print("进房成功没有");
+      print("进房成功没有");
     }).catchError((onError){
       print("进房异常了");
     });
   }
   _whiteboardSyncCompleted(){
-     widget._whiteboardController.reset().then((value){
-       widget._whiteboardController.addBackgroundImage("https://5b0988e595225.cdn.sohucs.com/q_70,c_zoom,w_640/images/20180409/3ba0912dbd894d9fb25ca074046ee4f4.jpeg");
-       widget._whiteboardController.setBackgroundColor("#F5F6FA");
-     });
+    widget._whiteboardController.reset().then((value) async {
+      // await widget._whiteboardController.addBackgroundImage("https://5b0988e595225.cdn.sohucs.com/q_70,c_zoom,w_640/images/20180409/3ba0912dbd894d9fb25ca074046ee4f4.jpeg");
+      widget._whiteboardController.setBackgroundColor("#F5F6FA");
+    });
 
   }
 
@@ -283,9 +285,83 @@ class _MyAppState extends State<MyApp> {
             }().last),
             child: Row(
               children: [
-                Expanded(child: Whiteboard(
-                  controller: widget._whiteboardController,
-                )),
+                Expanded(child: LayoutBuilder(
+                  builder: (context,cc){
+                    return Container(
+                      width: cc.maxWidth,
+                      height: cc.maxHeight,
+                      child: Stack(
+                        children: [
+                          Positioned.fill(child: Whiteboard(
+                            controller: widget._whiteboardController,
+                          )),
+                          Positioned(child: Container(
+                            child: Row(
+                              children: [
+                                Padding(padding: EdgeInsets.only(right: 10
+                                ),child: CupertinoButton(
+                                    minSize:0,padding:EdgeInsets.zero,
+                                    child: Container(
+                                      width:76,
+                                      height:36,
+                                      child: Center(
+                                        child: Row(
+                                          mainAxisAlignment:MainAxisAlignment.center,
+                                          children: [
+                                            Padding(padding:EdgeInsets.only(right: 6) ,
+                                              child: ImageViewLocal(
+                                                  placeHolder: "icon_exit_whiteboard",
+                                                  size: 18,
+                                                  height: 18,
+                                                  fit: BoxFit.fill
+                                              ),),
+                                            Text("退出",style: TextStyle(fontSize: 14,color: Color(0XFF666666)),)
+                                          ],
+                                        ),
+                                      ),
+                                      decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(20)
+                                      ),
+                                    ), onPressed: (){
+                                      _exitWhiteboard();
+                                }),),
+                                CupertinoButton(
+                                    minSize:0,padding:EdgeInsets.zero,
+                                    child: Container(
+                                      width:76,
+                                      height:36,
+                                      child: Center(
+                                        child: Row(
+                                          mainAxisAlignment:MainAxisAlignment.center,
+                                          children: [
+                                            Padding(padding:EdgeInsets.only(right: 6) ,
+                                              child: ImageViewLocal(
+                                                  placeHolder: "icon_change_background",
+                                                  size: 18,
+                                                  height: 18,
+                                                  fit: BoxFit.fill
+                                              ),),
+                                            Text("背景图",style: TextStyle(fontSize: 14,color: Color(0XFF666666)),)
+                                          ],
+                                        ),
+                                      ),
+                                      decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(20)
+                                      ),
+                                    ), onPressed: (){
+
+                                })
+                              ],
+                            ),
+                          ),left: 15,top: 15,)
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                ),
                 Container(
                   width: 50,
                   height: double.infinity,
@@ -294,18 +370,51 @@ class _MyAppState extends State<MyApp> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20)
                   ),
-                  padding: EdgeInsets.only(top: 9,bottom: 0),
-                  child: Column(
-                    children: ()sync*{
-                      yield* [1,2,3,4,5,6,7,8].map((element) {
-                        return Container(
-                          height: 22,
-                          width: 22,
-                          color: Colors.red,
-                          margin: EdgeInsets.only(top: 7,bottom: 15),
-                        );
-                      });
-                    }().toList(),
+                  child: LayoutBuilder(
+                    builder: (context,cc){
+                      return Container(
+                        padding: EdgeInsets.only(top: cc.maxHeight*(4/345.0),bottom: cc.maxHeight*(4/345.0)),
+                        child: Column(
+                          children: ()sync*{
+                            final icons=["icon_graffiti","icon_line","icon_square","icon_circular","icon_text","icon_eraser",
+                              "icon_rollback","icon_wipe"];
+                            yield* icons.asMap().map((key,element) {
+                              return MapEntry(key, CupertinoButton(
+                                  child:Container(
+                                    height: cc.maxHeight*(((345.0-4*2)/icons.length)/(345.0)),
+                                    width: double.infinity,
+                                    child: Center(
+                                      child: Container(
+                                        width: cc.maxHeight*(22/345.0),
+                                        height: cc.maxHeight*(22/345.0),
+                                        child: LayoutBuilder(
+                                          builder: (context,cc){
+                                            return ImageViewLocal(
+                                                placeHolder: "$element${initialOptionPosition==key?"_selected":""}",
+                                                size: cc.maxWidth,
+                                                height: cc.maxHeight,
+                                                fit: BoxFit.fill
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                    padding: EdgeInsets.only(top: cc.maxHeight*(10/345.0),bottom: cc.maxHeight*(10/345.0)),
+                                  ),
+                                  minSize: 0,padding: EdgeInsets.zero,
+                                  onPressed: (){
+                                    if(key<icons.length-2){
+                                      initialOptionPosition=key;
+                                      setState(() {
+
+                                      });
+                                    }
+                                  }));
+                            }).values;
+                          }().toList(),
+                        ),
+                      );
+                    },
                   ),
                 )
               ],
@@ -397,6 +506,10 @@ class _MyAppState extends State<MyApp> {
   }
 
   showErrordDialog(String error){}
+
+  void _exitWhiteboard() {
+
+  }
 
 
 

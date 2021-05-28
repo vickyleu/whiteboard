@@ -391,8 +391,8 @@ class WhiteboardController {//extends Listener
     _api.receiveData(ReceivedData()..data=msg);
   }
 
-  void addBackgroundImage(String url) {
-    _api.addBackgroundImage(StringData()..value= url);
+  Future<void> addBackgroundImage(String url) {
+    return _api.addBackgroundImage(StringData()..value= url);
   }
 
 

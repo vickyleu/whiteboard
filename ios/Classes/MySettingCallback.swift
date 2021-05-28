@@ -39,7 +39,7 @@ internal class  MySettingCallback : NSObject,IMoreListener {
     
     func onTipTextInput(textContent: String) {
         let titleStyle = TEduBoardToolTypeTitleStyle()
-        titleStyle.color = UIColor.init(hex: "#FF0000")
+        titleStyle.color = UIColor(hex: "#FF0000")
         titleStyle.size = 1000
         titleStyle.style = TEduBoardTextStyle.TEDU_BOARD_TEXT_STYLE_BOLD_ITALIC
         titleStyle.position = TEduBoardPosition.TEDU_BOARD_POSITION_RIGHT_TOP
@@ -91,11 +91,11 @@ internal class  MySettingCallback : NSObject,IMoreListener {
     }
     
     func onSetBrushColor(color: Int) {
-        awareManager?.boardAware?.mBoard?.setBrush(UIColor.init(rgbValue: color))
+        awareManager?.boardAware?.mBoard?.setBrush(UIColor(rgb: color))
     }
     
     func onSetTextColor(color: Int) {
-        awareManager?.boardAware?.mBoard?.setTextColor(UIColor.init(rgbValue: color))
+        awareManager?.boardAware?.mBoard?.setTextColor(UIColor(rgb: color))
     }
     
     func onSetTextStyle(style: Int) {
@@ -103,7 +103,7 @@ internal class  MySettingCallback : NSObject,IMoreListener {
     }
     
     func onSetBackgroundColore(color: Int) {
-        awareManager?.boardAware?.mBoard?.setBackgroundColor(UIColor.init(rgbValue: color))
+        awareManager?.boardAware?.mBoard?.setBackgroundColor(UIColor(rgb: color))
     }
     
     func onSetBackgroundImage(path: String) {
