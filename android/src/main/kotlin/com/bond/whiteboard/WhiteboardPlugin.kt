@@ -58,7 +58,7 @@ class WhiteboardPlugin: FlutterPlugin,ActivityAware {
         val classroomOption = TICClassroomOption()
         classroomOption.classId = arg.roomId.toInt()
         classroomOption.boardInitPara = initParam
-        awareManager.joinClassroom(classroomOption, object : TICCallback<Any> {
+        awareManager.joinClassroom(classroomOption, arg.boardRatio,object : TICCallback<Any> {
           override fun onSuccess(data: Any) {
             result?.success(PigeonPlatformMessage.DataModel().apply {
               this.code= 1

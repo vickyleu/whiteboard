@@ -46,7 +46,7 @@ public class SwiftWhiteboardPlugin: NSObject, FlutterPlugin,FLTPigeonApi {
             classroomOption.classId = UInt32(arg!.roomId!.intValue)
             classroomOption.boardInitParam = initParam
 
-            awareManager.joinClass(classroomOption){ (module, errCode, errMsg) in
+            awareManager.joinClass(classroomOption,arg!.boardRatio!){ (module, errCode, errMsg) in
                 if(errCode == 1){
                     model.code = 1
                     model.msg = "进入课堂成功:\(arg!.roomId!.intValue)"
@@ -83,7 +83,7 @@ public class SwiftWhiteboardPlugin: NSObject, FlutterPlugin,FLTPigeonApi {
     }
     public func setBackgroundColor(_ arg: FLTStringData?, completion: @escaping (FlutterError?) -> Void) {
         if(arg?.value != nil){
-            awareManager.setBackgroundColor(UIColor.init(hex: arg!.value!)!)
+            awareManager.setBackgroundColor(UIColor.red)
         }
         completion(nil)
     }

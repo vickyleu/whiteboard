@@ -18,7 +18,8 @@ class PreJoinClassRequest {
 }
 class JoinClassRequest {
   int roomId;
-  JoinClassRequest(this.roomId);
+  String boardRatio;
+  JoinClassRequest(this.roomId,this.boardRatio);
 }
 
 

@@ -3,15 +3,14 @@ package com.bond.whiteboard
 import android.graphics.Color
 import android.os.Build
 import android.util.Log
-import android.webkit.WebView
 import android.widget.FrameLayout
-import android.widget.ImageView
 import androidx.annotation.ColorInt
 import com.bond.whiteboard.board.BoardAware
 import com.bond.whiteboard.nativeView.NativeViewLink
 import com.bond.whiteboard.teb.BoardAwareInterface
 import com.bond.whiteboard.teb.MyBoardCallback
 import com.pigeon.PigeonPlatformMessage
+import com.tencent.smtt.sdk.WebView
 import com.tencent.teduboard.TEduBoardController
 import com.tencent.teduboard.TEduBoardController.TEduBoardFileInfo
 import com.tencent.tic.core.TICCallback
@@ -20,6 +19,7 @@ import com.tencent.tic.core.TICManager
 import com.tencent.tic.core.TICManager.Companion.MODULE_IMSDK
 import com.tencent.tic.core.TICManager.Companion.TICSDK_WHITEBOARD_CMD
 import com.tencent.tic.core.TICManager.TICIMStatusListener
+
 
 class AwareManager : TICIMStatusListener, BoardAwareInterface {
     var nativeViewLink: NativeViewLink?=null
@@ -68,9 +68,14 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
         print("预创建参数初始化成功")
         ticCallback.onSuccess(1)
     }
-    fun joinClassroom(classroomOption: TICClassroomOption, ticCallback: TICCallback<Any>) {
+    fun joinClassroom(
+        classroomOption: TICClassroomOption,
+        ratio: String,
+        ticCallback: TICCallback<Any>
+    ) {
         classroomOption.boardCallback = boardAware?.mBoardCallback
         mTicManager.initTEduBoard(classroomOption)
+        mTicManager.boardController?.boardRatio=ratio
         print("创建课堂 成功, 房间号：${classroomOption.classId}")
         ticCallback.onSuccess(1)
     }
@@ -132,12 +137,14 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
         val board= boardAware?.mBoard ?:return
         board.backgroundColor= TEduBoardController.TEduBoardColor(Color.TRANSPARENT)
         val boardView= board.boardRenderView ?:return
-        val webView = boardView as WebView
-        val setting = webView.settings
-         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP) {
-             setting.mixedContentMode = 0;
-         }
-
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP) {
+            try {
+                val webView = boardView as WebView
+                webView.settings.mixedContentMode=0
+                webView.setBackgroundColor(Color.TRANSPARENT)
+                webView.setPadding(0,0,0,0)
+            }catch (e:Exception){}
+        }
         val layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         nativeViewLink?.addView(boardView,layoutParams)
     }
@@ -158,7 +165,6 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
 
     fun addBackgroundImage(url: String) {
         boardAware?.mBoard?.setBackgroundImage(url, TEduBoardController.TEduBoardImageFitMode.TEDU_BOARD_IMAGE_FIT_MODE_CENTER)
-//        boardAware?.mBoard?.addBoard(url)
     }
 
 

@@ -17,7 +17,6 @@ class WhiteboardViewFactory: PlatformViewFactory(io.flutter.plugin.common.Standa
     }
 
     override fun addView(view: View, layoutParams: ViewGroup.LayoutParams) {
-        view.setBackgroundColor(Color.RED)
         nativeViewContainer?.rootView?.addView(view,layoutParams)
     }
 

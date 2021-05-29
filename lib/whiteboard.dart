@@ -5,10 +5,11 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:whiteboard/pigeon/PigeonPlatformMessage.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:whiteboard/pigeon/PigeonPlatformMessage.dart';
 
 class Whiteboard extends StatefulWidget{
   final WhiteboardController controller;
@@ -35,150 +36,96 @@ class _WhiteboardState extends State<Whiteboard>{
   @override
   Widget build(BuildContext context) {
     final Map<String, dynamic> creationParams = <String, dynamic>{};
-    Widget nativeView;
-    if(Platform.isIOS){
-      nativeView= UiKitView(
-        viewType: _uniqueIdentifier,
-        hitTestBehavior: PlatformViewHitTestBehavior.opaque,
-        layoutDirection: TextDirection.ltr,
-        creationParams: creationParams,
-        creationParamsCodec: const StandardMessageCodec(),
-        onPlatformViewCreated: (id){
-          widget.controller.onNativeCreated(id);
-        },
-      );
-    }else if(Platform.isAndroid){
-      nativeView = PlatformViewLink(
-        viewType: _uniqueIdentifier,
-        surfaceFactory:(BuildContext context, PlatformViewController controller) {
-          return AndroidViewSurface(
-            controller: controller,
-            hitTestBehavior: PlatformViewHitTestBehavior.opaque,
-            gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
-          );
-        },
-        onCreatePlatformView: (PlatformViewCreationParams params) {
-          return PlatformViewsService.initSurfaceAndroidView(
-            id: params.id,
-            viewType: _uniqueIdentifier,
-            layoutDirection: TextDirection.ltr,
-            creationParams: creationParams,
-            creationParamsCodec: StandardMessageCodec(),
-          )..addOnPlatformViewCreatedListener((id){
-            params.onPlatformViewCreated(id);
-            widget.controller.onNativeCreated(id);
-          })
-            ..create();
-        },
-      );
-    }else{
+
+    if(!Platform.isIOS && !Platform.isAndroid){
       return Container();
-    }
+    }else{
+      return LayoutBuilder(
+        builder: (context,cc){
+          assert(cc.maxWidth!=double.infinity&&cc.maxHeight!=double.infinity,"必须约束宽高");
+          Widget nativeView;
 
-
-    return LayoutBuilder(
-      builder: (context,cc){
-        assert(cc.maxWidth!=double.infinity&&cc.maxHeight!=double.infinity,"必须约束宽高");
-
-        final ccRatio=cc.maxWidth/cc.maxHeight;
-        if(ccRatio==1.765){
-
-        }else if(ccRatio>1.765){
-          final height=cc.maxHeight;
-
-        }else{
-
-        }
-        // final vw = image.width.toDouble();
-        // final vh = image.height.toDouble();
-        // final sw = image.swidth.toDouble();
-        // final sh = image.sheight.toDouble();
-        // var aspectRatio = vw / vh;
-        // var scale = 0.0;
-        // if (vw > 0 && vh > 0) {
-        //   if (vw * sh > sw * vh) {
-        //     scale = (sw * vh / vw) / vh;
-        //   } else if (vw * sh < sw * vh) {
-        //     scale = (sh * vw / vh) / vw;
-        //   } else {
-        //     scale = sw / vw;
-        //   }
-        // }
-        // yield Center(
-        //     child: Container(
-        //     width: vw * scale,
-        //     height: vh * scale,
-        //     child: Center(
-        //     child: AspectRatio(
-        //     aspectRatio: aspectRatio,
-        //     child: ImageViewLocal(
-        //     placeHolder: "",
-        //     uint8list: image.image,
-        //     height: image.height.toDouble(),
-        // size: image.width.toDouble(),
-        // // height: cc.maxHeight.toDouble(),
-        // // size: cc.maxWidth.toDouble(),
-        // fit: BoxFit.fitHeight,
-        // ),
-        // ),
-        // ),
-        // ),
-        // );
-        return Container(
-          width: double.infinity,
-          child: AspectRatio(
-            aspectRatio: 1.765,
-            child: Container(
-              child: IgnorePointer(
-                child: nativeView,
-                ignoring: false,
-              ),
-            ),
-          ),
-        );
-        return PhotoView.customChild(
-          maxScale: 3.0,
-          minScale: 1.0,
-          disableGestures: false,
-          controller: _photoViewController,
-          gestureDetectorBehavior: HitTestBehavior.deferToChild,
-          child:ValueListenableBuilder<bool>(
-              valueListenable: scaleGesture,
-              builder: (context,value,_){
-                print("跑到这里来没有$value");
-                return ClipRect(
-                  child: Container(
-                    height: cc.maxHeight,
-                    width: cc.maxWidth,
-                    child: Container(
-                      width: double.infinity,
-                      child: AspectRatio(
-                        aspectRatio: 1.765,
-                        child: Container(
-                          child: IgnorePointer(
-                            child: nativeView,
-                            ignoring: value,
-                          ),
-                        ),
-                      ),
+          double width=cc.maxWidth;
+          double height=cc.maxHeight;
+          int greatestCommonFactor(int width, int height) {
+            return (height == 0) ? width : greatestCommonFactor(height, width % height);
+          }
+          int factor = greatestCommonFactor(width.toInt(), height.toInt());
+          double widthRatio = width / factor;
+          double heightRatio = height / factor;
+          String ratio="$widthRatio:$heightRatio";
+          if(Platform.isIOS){
+            nativeView= UiKitView(
+              viewType: _uniqueIdentifier,
+              hitTestBehavior: PlatformViewHitTestBehavior.opaque,
+              layoutDirection: TextDirection.ltr,
+              creationParams: creationParams,
+              creationParamsCodec: const StandardMessageCodec(),
+              onPlatformViewCreated: (id){
+                widget.controller.onNativeCreated(id,ratio);
+              },
+            );
+          }else if(Platform.isAndroid){
+            nativeView= AndroidView(
+              viewType: _uniqueIdentifier,
+              layoutDirection: TextDirection.ltr,
+              creationParams: creationParams,
+              hitTestBehavior: PlatformViewHitTestBehavior.opaque,
+              gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
+              onPlatformViewCreated: (id){
+                widget.controller.onNativeCreated(id,ratio);
+              },
+              creationParamsCodec: const StandardMessageCodec(),
+            );
+            // nativeView = PlatformViewLink(
+            //   viewType: _uniqueIdentifier,
+            //   surfaceFactory:(BuildContext context, PlatformViewController controller) {
+            //     return AndroidViewSurface(
+            //       controller: controller,
+            //       hitTestBehavior: PlatformViewHitTestBehavior.opaque,
+            //       gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
+            //     );
+            //   },
+            //   onCreatePlatformView: (PlatformViewCreationParams params) {
+            //     return PlatformViewsService.initSurfaceAndroidView(
+            //       id: params.id,
+            //       viewType: _uniqueIdentifier,
+            //       layoutDirection: TextDirection.ltr,
+            //       creationParams: creationParams,
+            //       creationParamsCodec: StandardMessageCodec(),
+            //     )..addOnPlatformViewCreatedListener((id){
+            //       params.onPlatformViewCreated(id);
+            //       widget.controller.onNativeCreated(id);
+            //     })
+            //       ..create();
+            //   },
+            // );
+          }
+          print("ratio:::$ratio LayoutBuilder");
+          return Container(
+            color: Colors.red,
+            child: Center(
+              child: Container(
+                color: Colors.transparent,
+                width: cc.maxWidth,
+                height: cc.maxHeight,
+                child: Container(
+                  color: Colors.transparent,
+                  child: Center(
+                    child: IgnorePointer(
+                      child: nativeView,
+                      ignoring: false,
                     ),
                   ),
-                );
-              }
-          ),
-          customSize: Size(cc.maxWidth,cc.maxHeight),
-        );
-        return RawGestureDetector(
-          // child: ,
-          behavior: HitTestBehavior.deferToChild,
-          gestures: {
-            _MultipleScaleGestureRecognizer: _multiTouch(cc),
-            DoubleTapGestureRecognizer: _doubleTap(),
-          },
-        );
-      },
-    );
-
+                ),
+              ),
+            ),
+            width: cc.maxWidth,
+            height: cc.maxHeight,
+          );
+        },
+      );
+    }
   }
 
   @override
@@ -314,19 +261,32 @@ class PigeonFlutterApiImpl extends PigeonFlutterApi {
 class WhiteboardController {//extends Listener
   PigeonApi _api =  PigeonApi();
 
+  String _boardRatio = "4:3";
+
+  String  get  boardRatio {
+    return _boardRatio;
+  }
+  WhiteboardController();
+
   Set<Function>_createdListener=Set();
   bool _isCreated=false;
+  bool _isLogin=false;
   _WhiteboardState _state;
   PigeonFlutterApi _pigeonFlutterApi;
 
   Future<void> reset() {
-   return _api.reset();
+    return _api.reset();
   }
   Future<void> setBackgroundColor(String color) {
-   return _api.setBackgroundColor(StringData()..value = color);
+    return _api.setBackgroundColor(StringData()..value = color);
   }
   Future<DataModel> joinClass(int classId) {
-    return _api.joinClass(JoinClassRequest()..roomId=classId).then((value){
+    final ratio=boardRatio;
+    print("ratio:::$ratio");
+    return _api.joinClass(JoinClassRequest()
+      ..roomId=classId
+      ..boardRatio=ratio
+    ).then((value){
       if(value.code==-1){
         print("joinClass # ${value.msg}");
       }else{
@@ -376,11 +336,10 @@ class WhiteboardController {//extends Listener
     _state=null;
   }
 
-  void onNativeCreated(int id) {
+  void onNativeCreated(int id, String ratio) {
     _isCreated=true;
-    _createdListener.forEach((element) {
-      element();
-    });
+    _boardRatio=ratio;
+    _alreadyCreated();
   }
 
   void addCreatedListener(Function() created) {
@@ -393,6 +352,18 @@ class WhiteboardController {//extends Listener
 
   Future<void> addBackgroundImage(String url) {
     return _api.addBackgroundImage(StringData()..value= url);
+  }
+
+  void _alreadyCreated(){
+    if(_isCreated&&_isLogin)
+      _createdListener.forEach((element) {
+        element();
+      });
+  }
+
+  void isLoginSuccess() {
+    _isLogin=true;
+    _alreadyCreated();
   }
 
 

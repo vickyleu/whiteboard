@@ -7,6 +7,7 @@
 
 import Foundation
 import Masonry
+import WebKit
 
 public class AwareManager : NSObject, BoardAwareInterface{
     let mTicManager : TICManager = TICManager.sharedInstance()
@@ -29,13 +30,13 @@ public class AwareManager : NSObject, BoardAwareInterface{
             let data = FLTReceivedData()
             data.data = FlutterStandardTypedData(bytes: d!)
             data.extension=ext
-            print("receive嘿嘿嘿嘿嘿嘿嘿嘿呵呵呵呵呵呵::🙄::\(data.data)")
+            print("receive嘿嘿嘿嘿嘿嘿嘿嘿呵呵呵呵呵呵::::\(data.data)")
             self.flutterApi?.receive(data, completion: {model,_ in
                 if(model.code?.intValue == -1){
                     print("同步失败了:${it.msg}")
                 }else{
                     guard  let wtf : TEduBoardController = self.boardAware?.mBoard else { return }
-//                    wtf.addAckData(data) //// 🙄🙄🙄🙄🙄🙄🙄❓❓❓❓❓❓❓❓❓❓🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃
+//                    wtf.addAckData(data) ////
                 }
             })
         }
@@ -45,7 +46,7 @@ public class AwareManager : NSObject, BoardAwareInterface{
        
         ticCallback(TICModule.TICMODULE_IMSDK,1,"预创建参数初始化成功")
     }
-    func joinClass(_ classroomOption:TICClassroomOption,ticCallback: @escaping TICCallback) {
+    func joinClass(_ classroomOption:TICClassroomOption,_ boardRatio:String,ticCallback: @escaping TICCallback) {
         classroomOption.boardDelegate = boardAware?.mBoardCallback
         mTicManager.initTEduBoard(classroomOption)
         guard let boardController =  mTicManager.getBoardController() else {
@@ -53,6 +54,9 @@ public class AwareManager : NSObject, BoardAwareInterface{
             return
         }
         boardController.setGlobalBackgroundColor(UIColor.clear)
+        
+        boardController.setBoardRatio(boardRatio)
+        
         boardAware?.mBoard = boardController
         classroomOption.boardDelegate?.onTEBInit() ///腾讯的Android和iOS回调不同步,这里手动调用,保证在业务层处理逻辑是一样的.反正回调中我会判断画板是否已经准备就绪的
         ticCallback(TICModule.TICMODULE_IMSDK,1,"创建课堂 成功, 房间号 \(classroomOption.classId)")
@@ -62,7 +66,7 @@ public class AwareManager : NSObject, BoardAwareInterface{
         let model = FLTReceivedData()
         model.data = FlutterStandardTypedData(bytes: data.data(using: .utf8)!)
         model.extension="TXWhiteBoardExt"
-        print("receive嘿嘿嘿嘿嘿嘿嘿嘿呵呵呵呵呵呵::🙄😀::\(model.data)")
+        print("receive嘿嘿嘿嘿嘿嘿嘿嘿呵呵呵呵呵呵:::\(model.data)")
         self.flutterApi?.receive(model, completion: {model,_ in
             if(model.code?.intValue == -1){
                 print("同步失败了:${it.msg}")
@@ -80,7 +84,6 @@ public class AwareManager : NSObject, BoardAwareInterface{
     
     func addBackgroundImage(url:String){
         boardAware?.mBoard?.setBackgroundImage(url, mode: TEduBoardImageFitMode.TEDU_BOARD_IMAGE_FIT_MODE_CENTER)
-//        boardAware?.mBoard?.addBoard(withBackgroundImage: url)
     }
     func quitClassroom() {
     
@@ -128,8 +131,10 @@ public class AwareManager : NSObject, BoardAwareInterface{
 
     func addBoardView() {
         guard let board = boardAware?.mBoard else { return }
-        board.setBackgroundColor(UIColor.clear)//UIColor.clear
-        guard let boardView = board.getBoardRenderView() else { return }
+        guard let boardView : WKWebView = board.getBoardRenderView() as? WKWebView else { return }
+        print("addBoardView::::::\(boardView)")
+        boardView.isOpaque = false
+        boardView.backgroundColor = UIColor.clear
         nativeViewLink?.addView(boardView) { (root: UIView, make: MASConstraintMaker?) in
             make?.top.equalTo()(root)
             make?.left.equalTo()(root)

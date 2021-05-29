@@ -31,7 +31,6 @@ public class WhiteboardViewFactory : NSObject, FlutterPlatformViewFactory,Native
     
     
     func addView(_ view: UIView,layoutParam:(UIView, MASConstraintMaker?) -> ()) {
-        print("onTeb给点响应啊,妈的  addView:\(0)")
         guard let root = nativeViewContainer?.rootView else {
             return
         }

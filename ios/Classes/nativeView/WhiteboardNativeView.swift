@@ -9,7 +9,7 @@ import Foundation
 import Flutter
 
 public class WhiteboardNativeView : NSObject, FlutterPlatformView {
-    let rootView = UIView.init()
+    let rootView = UIView()
     
     init(
         frame: CGRect,

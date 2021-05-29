@@ -12,10 +12,12 @@ import Flutter
     }
     
 //    override func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
-//        return UIInterfaceOrientationMask(arrayLiteral: [
-//            UIInterfaceOrientationMask.landscapeLeft,
-//            UIInterfaceOrientationMask.landscapeRight,
-//            UIInterfaceOrientationMask.portrait
-//        ])
+//        return UIInterfaceOrientationMask.all
+//            
+////            UIInterfaceOrientationMask(arrayLiteral: [
+////            UIInterfaceOrientationMask.landscapeLeft,
+////            UIInterfaceOrientationMask.landscapeRight,
+////            UIInterfaceOrientationMask.portrait
+////        ])
 //    }
 }

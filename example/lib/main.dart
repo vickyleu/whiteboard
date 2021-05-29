@@ -56,6 +56,7 @@ class _MyAppState extends State<MyApp> {
   final userAvailableMap=HashMap<String,Map>();
   @override
   void initState() {
+
     initSDK();
     super.initState();
   }
@@ -65,6 +66,7 @@ class _MyAppState extends State<MyApp> {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
+    SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top,SystemUiOverlay.bottom]);
     // widget._whiteboardController.dispose();
     super.dispose();
   }
@@ -112,9 +114,13 @@ class _MyAppState extends State<MyApp> {
         },
         syncCompletedCallback: (){
           _whiteboardSyncCompleted();
-          initTRTC(appid, userId, pwdStr,classId);
+          // initTRTC(appid, userId, pwdStr,classId);
         }
     ));
+    widget._whiteboardController.addCreatedListener((){
+      print("有点卵用吗");
+      _created(classId,appid,userId,pwdStr);
+    });
     await timManager.initSDK(
       sdkAppID: appid,
       loglevel: LogLevel.V2TIM_LOG_DEBUG,
@@ -130,9 +136,7 @@ class _MyAppState extends State<MyApp> {
               if (res.code == 0) {
                 print("======腾讯IM登录成功=====${res}");
                 ///设置离线消息通道,businessID为腾讯后台生成的id,必须是登录成功后设置,不然无效
-
-                _register(appid, pwdStr, userId,classId);
-
+                widget._whiteboardController.isLoginSuccess();
               } else {
                 print("======腾讯IM登录失败=====${res}");
               }
@@ -148,6 +152,15 @@ class _MyAppState extends State<MyApp> {
         },
       ),
     );
+    timManager.getMessageManager().addAdvancedMsgListener(listener: new V2TimAdvancedMsgListener(
+        onRecvNewMessage: (msg){
+          if(msg.groupID!=null&&msg.customElem.extension=="TXWhiteBoardExt"){
+            final receive = msg.customElem.data;
+            var outputAsUint8List = new Uint8List.fromList(receive.codeUnits);
+            widget._whiteboardController.receiveMsg(outputAsUint8List);
+          }
+        }
+    ));
   }
   void enterRoom(int appID,String userId,String userSig,int classId) {
     widget.trtcCloud.registerListener(onRtcListener);
@@ -165,7 +178,7 @@ class _MyAppState extends State<MyApp> {
   }
   _whiteboardSyncCompleted(){
     widget._whiteboardController.reset().then((value) async {
-      // await widget._whiteboardController.addBackgroundImage("https://5b0988e595225.cdn.sohucs.com/q_70,c_zoom,w_640/images/20180409/3ba0912dbd894d9fb25ca074046ee4f4.jpeg");
+      await widget._whiteboardController.addBackgroundImage("https://5b0988e595225.cdn.sohucs.com/q_70,c_zoom,w_640/images/20180409/3ba0912dbd894d9fb25ca074046ee4f4.jpeg");
       widget._whiteboardController.setBackgroundColor("#F5F6FA");
     });
 
@@ -200,87 +213,80 @@ class _MyAppState extends State<MyApp> {
         });
       }
     });
-
-  }
-  Future _register(int appid, String userSig, String userId, int groupId) async {
-    TencentImSDKPlugin.v2TIMManager.getMessageManager().addAdvancedMsgListener(listener: new V2TimAdvancedMsgListener(
-        onRecvNewMessage: (msg){
-          if(msg.groupID!=null&&msg.customElem.extension=="TXWhiteBoardExt"){
-            final receive = msg.customElem.data;
-            var outputAsUint8List = new Uint8List.fromList(receive.codeUnits);
-            widget._whiteboardController.receiveMsg(outputAsUint8List);
-          }
-        }
-    ));
-    widget._whiteboardController.addCreatedListener(_created(groupId,appid,userId,userSig));
   }
 
   @override
   Widget build(BuildContext context) {
     ValueKey remoteKey = ValueKey(remoteUserId);
     ValueKey selfkey = ValueKey(userId);
+    SystemChrome.setEnabledSystemUIOverlays([]);
     SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeLeft
     ]);
+
+
     return Scaffold(
       backgroundColor: Color(0xFFF5F6FA),
       body: Row(
         children:()sync*{
           yield Container(
-            width: 120+20.0,
+            width: 100,
+            color: Colors.transparent,
             height: double.infinity,
-            color: Colors.red,
-            child: Row(
-              children:()sync*{
-                print("userAvailableMapuserAvailableMap::${userAvailableMap.toString()}");
-                if(widget.trtcCloud!=null&&userAvailableMap.keys.length>0){
-                  final selfMap=userAvailableMap[userId];
-                  final remoteMap=userAvailableMap[remoteUserId];
-                  if(selfMap!=null&&selfMap['visible']){
-                    yield Container(
-                      key: selfkey,
-                      width: 120,
-                      height: 200,
-                      color: Colors.black,
-                      padding: EdgeInsets.all(5),
-                      child: TRTCCloudVideoView(
-                          key: selfkey,
-                          onViewCreated: (viewId) {
-                            widget.trtcCloud.startLocalPreview(true, viewId);
-                          }),
-                    );
+            child: ClipRect(
+              child: Row(
+                children:()sync*{
+                  print("userAvailableMapuserAvailableMap::${userAvailableMap.toString()}");
+                  if(widget.trtcCloud!=null&&userAvailableMap.keys.length>0){
+                    final selfMap=userAvailableMap[userId];
+                    final remoteMap=userAvailableMap[remoteUserId];
+                    if(selfMap!=null&&selfMap['visible']){
+                      yield Container(
+                        key: selfkey,
+                        width: 120,
+                        height: 200,
+                        color: Colors.black,
+                        padding: EdgeInsets.all(5),
+                        child: TRTCCloudVideoView(
+                            key: selfkey,
+                            onViewCreated: (viewId) {
+                              widget.trtcCloud.startLocalPreview(true, viewId);
+                            }),
+                      );
+                    }
+                    if(remoteMap!=null&&remoteMap['visible']){
+                      yield Container(
+                        key: remoteKey,
+                        width: 120,
+                        height: 200,
+                        color: Colors.black,
+                        padding: EdgeInsets.all(5),
+                        child: TRTCCloudVideoView(
+                            key: remoteKey,
+                            onViewCreated: (viewId) {
+                              widget.trtcCloud.startRemoteView(
+                                  remoteUserId,
+                                  remoteMap['type'] == 'video'?
+                                  TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_SMALL :
+                                  TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_SUB,
+                                  viewId);
+                            }),
+                      );
+                    }
                   }
-                  if(remoteMap!=null&&remoteMap['visible']){
-                    yield Container(
-                      key: remoteKey,
-                      width: 120,
-                      height: 200,
-                      color: Colors.black,
-                      padding: EdgeInsets.all(5),
-                      child: TRTCCloudVideoView(
-                          key: remoteKey,
-                          onViewCreated: (viewId) {
-                            widget.trtcCloud.startRemoteView(
-                                remoteUserId,
-                                remoteMap['type'] == 'video'?
-                                TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_SMALL :
-                                TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_SUB,
-                                viewId);
-                          }),
-                    );
-                  }
-                }
-              }().toList(),
+                }().toList(),
+              ),
             ),
           );
           yield Expanded(child: Container(
-            color: Color(1090938470655),
+            color: Color(0xFFF5F6FA),
             padding: EdgeInsets.only(right: ()sync*{
               final right=MediaQuery.of(context).padding.right;
               if(right>0){
                 yield right;
               }else{
-                yield 15;
+                yield 15.toDouble();
               }
             }().last),
             child: Row(
@@ -290,16 +296,21 @@ class _MyAppState extends State<MyApp> {
                     return Container(
                       width: cc.maxWidth,
                       height: cc.maxHeight,
+                      color: Colors.transparent,
                       child: Stack(
                         children: [
-                          Positioned.fill(child: Whiteboard(
-                            controller: widget._whiteboardController,
+                          Positioned.fill(child: Container(
+                            // padding:EdgeInsets.only(top: 36,bottom: 36),
+                            child: Whiteboard(
+                              controller: widget._whiteboardController,
+                            ),
                           )),
                           Positioned(child: Container(
+                            color: Colors.transparent,
                             child: Row(
                               children: [
-                                Padding(padding: EdgeInsets.only(right: 10
-                                ),child: CupertinoButton(
+                                Padding(padding: EdgeInsets.only(right: 10),
+                                  child: CupertinoButton(
                                     minSize:0,padding:EdgeInsets.zero,
                                     child: Container(
                                       width:76,
