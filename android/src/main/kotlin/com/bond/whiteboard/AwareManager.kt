@@ -24,6 +24,8 @@ import com.tencent.tic.core.TICManager.TICIMStatusListener
 class AwareManager : TICIMStatusListener, BoardAwareInterface {
     var nativeViewLink: NativeViewLink?=null
     var flutterApi: PigeonPlatformMessage.PigeonFlutterApi?=null
+    var drawerType = DrawerType.drawGraffiti
+
     private val settingCallback = MySettingCallback().also {
         it.awareManager=this
     }
@@ -70,7 +72,6 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
     }
     fun joinClassroom(
         classroomOption: TICClassroomOption,
-        ratio: String,
         ticCallback: TICCallback<Any>
     ) {
         classroomOption.boardCallback = boardAware?.mBoardCallback
@@ -136,14 +137,14 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
         val board= boardAware?.mBoard ?:return
         board.backgroundColor= TEduBoardController.TEduBoardColor(Color.TRANSPARENT)
         val boardView= board.boardRenderView ?:return
+        val webView = boardView as WebView
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP) {
             try {
-                val webView = boardView as WebView
                 webView.settings.mixedContentMode=0
-                webView.setBackgroundColor(Color.TRANSPARENT)
-                webView.setPadding(0,0,0,0)
             }catch (e:Exception){}
         }
+        webView.setBackgroundColor(Color.TRANSPARENT)
+        webView.setPadding(0,0,0,0)
         val layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         nativeViewLink?.addView(boardView,layoutParams)
     }
@@ -193,4 +194,58 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
 //        rtcAware?.mImgsFid
     }
 
+    fun drawGraffiti() {
+        if(drawerType==DrawerType.drawGraffiti)return
+        boardAware?.mBoard?.toolType = TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_PEN
+    }
+
+    fun drawLine() {
+        if(drawerType==DrawerType.drawLine)return
+        boardAware?.mBoard?.toolType = TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_LINE
+    }
+
+    fun drawSquare() {
+        if(drawerType==DrawerType.drawSquare)return
+        boardAware?.mBoard?.toolType = TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_RECT
+    }
+
+    fun drawCircular() {
+        if(drawerType==DrawerType.drawCircular)return
+        boardAware?.mBoard?.toolType = TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_OVAL
+    }
+
+    fun drawText() {
+        if(drawerType==DrawerType.drawText)return
+        boardAware?.mBoard?.textStyle = TEduBoardController.TEduBoardTextStyle.TEDU_BOARD_TEXT_STYLE_NORMAL
+        boardAware?.mBoard?.toolType = TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_TEXT
+    }
+
+    fun eraserDrawer() {
+        if(drawerType==DrawerType.eraserDrawer)return
+        val arr : ArrayList<Int> = arrayListOf<Int>(TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_LINE,
+            TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_OVAL,
+            TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_PEN,
+            TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_RECT,
+            TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_TEXT)
+        boardAware?.mBoard?.toolType = TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_ERASER
+        boardAware?.mBoard?.setEraseLayerType(arr)
+    }
+
+    fun rollbackDraw() {
+        boardAware?.mBoard?.undo()
+    }
+
+    fun wipeDraw() {
+        boardAware?.mBoard?.clear(false)
+    }
+
+}
+
+enum class DrawerType{
+    drawGraffiti,
+    drawLine,
+    drawSquare,
+    drawCircular,
+    drawText,
+    eraserDrawer,
 }

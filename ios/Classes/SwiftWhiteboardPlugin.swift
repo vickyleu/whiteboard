@@ -2,6 +2,46 @@ import Flutter
 import UIKit
 
 public class SwiftWhiteboardPlugin: NSObject, FlutterPlugin,FLTPigeonApi {
+    public func drawGraffiti(_ completion: @escaping (FLTNilData?, FlutterError?) -> Void) {
+        awareManager.drawGraffiti()
+        completion(FLTNilData(),nil)
+    }
+    
+    public func drawLine(_ completion: @escaping (FLTNilData?, FlutterError?) -> Void) {
+        awareManager.drawLine()
+        completion(FLTNilData(),nil)
+    }
+    
+    public func drawSquare(_ completion: @escaping (FLTNilData?, FlutterError?) -> Void) {
+        awareManager.drawSquare()
+        completion(FLTNilData(),nil)
+    }
+    
+    public func drawCircular(_ completion: @escaping (FLTNilData?, FlutterError?) -> Void) {
+        awareManager.drawCircular()
+        completion(FLTNilData(),nil)
+    }
+    
+    public func drawText(_ completion: @escaping (FLTNilData?, FlutterError?) -> Void) {
+        awareManager.drawText()
+        completion(FLTNilData(),nil)
+    }
+    
+    public func eraserDrawer(_ completion: @escaping (FLTNilData?, FlutterError?) -> Void) {
+        awareManager.eraserDrawer()
+        completion(FLTNilData(),nil)
+    }
+    
+    public func rollbackDraw(_ completion: @escaping (FLTNilData?, FlutterError?) -> Void) {
+        awareManager.rollbackDraw()
+        completion(FLTNilData(),nil)
+    }
+    
+    public func wipeDraw(_ completion: @escaping (FLTNilData?, FlutterError?) -> Void) {
+        awareManager.wipeDraw()
+        completion(FLTNilData(),nil)
+    }
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
         let boardFactory = WhiteboardViewFactory.init()
         let plugin = SwiftWhiteboardPlugin.init()

@@ -124,28 +124,75 @@ class WhiteboardPlugin: FlutterPlugin,ActivityAware {
       }
     }
 
-    override fun reset(result: PigeonPlatformMessage.Result<Void>?) {
+    override fun reset(result: PigeonPlatformMessage.Result<PigeonPlatformMessage.NilData>?) {
       awareManager.reset()
-      result?.success(null)
+      result?.success(PigeonPlatformMessage.NilData())
     }
 
     override fun setBackgroundColor(
-      arg: PigeonPlatformMessage.StringData?, result: PigeonPlatformMessage.Result<Void>?) {
+      arg: PigeonPlatformMessage.StringData?, result: PigeonPlatformMessage.Result<PigeonPlatformMessage.NilData>?) {
       if(arg!=null){
         awareManager.setBackgroundColor(Color.parseColor(arg.value))
       }
-      result?.success(null)
+      result?.success(PigeonPlatformMessage.NilData())
     }
 
     override fun addBackgroundImage(
       arg: PigeonPlatformMessage.StringData?,
-      result: PigeonPlatformMessage.Result<Void>?
+      result: PigeonPlatformMessage.Result<PigeonPlatformMessage.NilData>?
     ) {
       if(arg!=null){
         awareManager.addBackgroundImage(arg.value)
       }
-      result?.success(null)
+      result?.success(PigeonPlatformMessage.NilData())
     }
+    //////
+
+
+
+
+
+    override fun drawGraffiti(result: PigeonPlatformMessage.Result<PigeonPlatformMessage.NilData>?) {
+      awareManager.drawGraffiti()
+      result?.success(PigeonPlatformMessage.NilData())
+    }
+
+    override fun drawLine(result: PigeonPlatformMessage.Result<PigeonPlatformMessage.NilData>?) {
+      awareManager.drawLine()
+      result?.success(PigeonPlatformMessage.NilData())
+    }
+
+    override fun drawSquare(result: PigeonPlatformMessage.Result<PigeonPlatformMessage.NilData>?) {
+      awareManager.drawSquare()
+      result?.success(PigeonPlatformMessage.NilData())
+    }
+
+    override fun drawCircular(result: PigeonPlatformMessage.Result<PigeonPlatformMessage.NilData>?) {
+      awareManager.drawCircular()
+      result?.success(PigeonPlatformMessage.NilData())
+    }
+
+    override fun drawText(result: PigeonPlatformMessage.Result<PigeonPlatformMessage.NilData>?) {
+      awareManager.drawText()
+      result?.success(PigeonPlatformMessage.NilData())
+    }
+
+    override fun eraserDrawer(result: PigeonPlatformMessage.Result<PigeonPlatformMessage.NilData>?) {
+      awareManager.eraserDrawer()
+      result?.success(PigeonPlatformMessage.NilData())
+    }
+
+    override fun rollbackDraw(result: PigeonPlatformMessage.Result<PigeonPlatformMessage.NilData>?) {
+      awareManager.rollbackDraw()
+      result?.success(PigeonPlatformMessage.NilData())
+    }
+
+    override fun wipeDraw(result: PigeonPlatformMessage.Result<PigeonPlatformMessage.NilData>?) {
+      awareManager.wipeDraw()
+      result?.success(PigeonPlatformMessage.NilData())
+    }
+
+    ///////
   }
 
 

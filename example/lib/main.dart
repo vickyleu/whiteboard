@@ -200,8 +200,8 @@ class _MyAppState extends State<MyApp> {
   _whiteboardSyncCompleted() {
     widget._whiteboardController.reset().then((value) async {
       _switchBackgroundVisible();
-      widget._whiteboardController.setBackgroundColor("#222222");
-      // widget._whiteboardController.setBackgroundColor("#F5F6FA");
+      // widget._whiteboardController.setBackgroundColor("#222222");
+      widget._whiteboardController.setBackgroundColor("#F5F6FA");
     });
   }
 
@@ -290,7 +290,7 @@ class _MyAppState extends State<MyApp> {
                               child: Whiteboard(
                                 controller: widget._whiteboardController,
                               ),
-                              color: Colors.red,
+                              color: Colors.transparent,
                             ),
                           ),
                           Positioned(
@@ -446,6 +446,7 @@ class _MyAppState extends State<MyApp> {
                                     minSize: 0,
                                     padding: EdgeInsets.zero,
                                     onPressed: () {
+                                      _executeCommand(key);
                                       if (key < icons.length - 2) {
                                         initialOptionPosition = key;
                                         setState(() {});
@@ -464,6 +465,9 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
+  void _executeCommand(int command){
+    // await
+  }
   Widget _profileArea() {
     ValueKey remoteKey = ValueKey(remoteUserId);
     ValueKey selfkey = ValueKey(userId);

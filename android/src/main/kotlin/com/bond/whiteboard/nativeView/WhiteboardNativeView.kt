@@ -7,12 +7,16 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import io.flutter.plugin.platform.PlatformView
 
-class WhiteboardNativeView(val context: Context?, val viewId: Int) : PlatformView {
+class WhiteboardNativeView(val context: Context?, val viewId: Int,val args:Any?) : PlatformView {
     var rootView = FrameLayout(context!!)
     init {
         rootView.id=viewId
         this.rootView.setPadding(0,0,0,0)
+        val map = args as Map<String,Any>
+        val width=map["width"].toString().toDouble()
+        val height=map["height"].toString().toDouble()
         rootView.setBackgroundColor(Color.TRANSPARENT)
+
     }
     override fun getView(): View {
         return  rootView
