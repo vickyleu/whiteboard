@@ -18,8 +18,7 @@ class PreJoinClassRequest {
 }
 class JoinClassRequest {
   int roomId;
-  String boardRatio;
-  JoinClassRequest(this.roomId,this.boardRatio);
+  JoinClassRequest(this.roomId);
 }
 
 
@@ -32,6 +31,9 @@ class StringData{
   String value;
 }
 class IntData{
+  int value;
+}
+class NilData{
   int value;
 }
 
@@ -47,13 +49,13 @@ abstract class PigeonApi {
   @async
   DataModel receiveData(ReceivedData params);
   @async
-  void setBackgroundColor(StringData color);
+  NilData setBackgroundColor(StringData color);
 
   @async
-  void reset();
+  NilData reset();
 
   @async
-  void addBackgroundImage(StringData url);
+  NilData addBackgroundImage(StringData url);
 }
 
 
@@ -62,11 +64,10 @@ abstract class PigeonApi {
 @FlutterApi()
 abstract class PigeonFlutterApi {
   @async
-  void exitRoom(DataModel model); // I want this to be async
+  NilData exitRoom(DataModel model); // I want this to be async
   @async
   DataModel receiveData(ReceivedData params);
-
-  void historySyncCompleted();
+  NilData historySyncCompleted();
 }
 
 

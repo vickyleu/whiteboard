@@ -40,13 +40,14 @@ public class SwiftWhiteboardPlugin: NSObject, FlutterPlugin,FLTPigeonApi {
         if(arg != nil){
             let initParam = TEduBoardInitParam.init()
             initParam.timSync = false;
+            initParam.globalBackgroundColor = UIColor.clear
             initParam.brushColor = UIColor.init(red: 255, green: 0, blue: 0, alpha: 1.0)
             initParam.smoothLevel = 0 //用于指定笔迹平滑级别，默认值0.1，取值[0, 1]
             let classroomOption = TICClassroomOption.init()
             classroomOption.classId = UInt32(arg!.roomId!.intValue)
             classroomOption.boardInitParam = initParam
 
-            awareManager.joinClass(classroomOption,arg!.boardRatio!){ (module, errCode, errMsg) in
+            awareManager.joinClass(classroomOption){ (module, errCode, errMsg) in
                 if(errCode == 1){
                     model.code = 1
                     model.msg = "进入课堂成功:\(arg!.roomId!.intValue)"
@@ -76,28 +77,27 @@ public class SwiftWhiteboardPlugin: NSObject, FlutterPlugin,FLTPigeonApi {
         model.msg = "退出课堂成功"
         completion(model,nil)
     }
-    
-    public func reset(_ completion: @escaping (FlutterError?) -> Void) {
+    public func reset(_ completion: @escaping (FLTNilData?, FlutterError?) -> Void) {
         awareManager.reset()
-        completion(nil)
+        completion(FLTNilData(),nil)
     }
-    public func setBackgroundColor(_ arg: FLTStringData?, completion: @escaping (FlutterError?) -> Void) {
+   
+    public func setBackgroundColor(_ arg: FLTStringData?, completion: @escaping (FLTNilData?, FlutterError?) -> Void) {
         if(arg?.value != nil){
-            awareManager.setBackgroundColor(UIColor.red)
+            awareManager.setBackgroundColor(UIColor.init(hex: arg!.value!))
         }
-        completion(nil)
+        completion(FLTNilData(),nil)
     }
     
-    public func addBackgroundImage(_ arg: FLTStringData?, completion: @escaping (FlutterError?) -> Void) {
+    public func addBackgroundImage(_ arg: FLTStringData?, completion: @escaping (FLTNilData?, FlutterError?) -> Void) {
         if(arg?.value != nil){
             awareManager.addBackgroundImage(url:arg!.value!)
         }
-        completion(nil)
+        completion(FLTNilData(),nil)
     }
 
     public func receive(_ arg: FLTReceivedData?, completion: @escaping (FLTDataModel?, FlutterError?) -> Void) {
         if(arg?.data != nil){
-            print("receive嘿嘿嘿嘿嘿嘿嘿嘿呵呵呵呵呵呵::\(arg!.data!)")
             let byte = [UInt8](arg!.data!.data)
             awareManager.receiveData(data:byte) { (module, errCode, errMsg) in
                 if(errCode == 1){

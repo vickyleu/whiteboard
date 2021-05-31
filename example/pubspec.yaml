@@ -15,8 +15,8 @@ dependencies:
     path: ../
   tencent_im_sdk_plugin: any
   tencent_trtc_cloud: "0.2.2"
-  cupertino_icons: 1.0.3
   cached_network_image: "2.5.1"
+  cupertino_icons: 1.0.3
 
 flutter:
   uses-material-design: true

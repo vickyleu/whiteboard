@@ -44,16 +44,10 @@ class _WhiteboardState extends State<Whiteboard>{
         builder: (context,cc){
           assert(cc.maxWidth!=double.infinity&&cc.maxHeight!=double.infinity,"必须约束宽高");
           Widget nativeView;
-
           double width=cc.maxWidth;
           double height=cc.maxHeight;
-          int greatestCommonFactor(int width, int height) {
-            return (height == 0) ? width : greatestCommonFactor(height, width % height);
-          }
-          int factor = greatestCommonFactor(width.toInt(), height.toInt());
-          double widthRatio = width / factor;
-          double heightRatio = height / factor;
-          String ratio="$widthRatio:$heightRatio";
+          creationParams["width"]=width;
+          creationParams["height"]=height;
           if(Platform.isIOS){
             nativeView= UiKitView(
               viewType: _uniqueIdentifier,
@@ -62,7 +56,7 @@ class _WhiteboardState extends State<Whiteboard>{
               creationParams: creationParams,
               creationParamsCodec: const StandardMessageCodec(),
               onPlatformViewCreated: (id){
-                widget.controller.onNativeCreated(id,ratio);
+                widget.controller.onNativeCreated(id);
               },
             );
           }else if(Platform.isAndroid){
@@ -73,55 +67,20 @@ class _WhiteboardState extends State<Whiteboard>{
               hitTestBehavior: PlatformViewHitTestBehavior.opaque,
               gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
               onPlatformViewCreated: (id){
-                widget.controller.onNativeCreated(id,ratio);
+                widget.controller.onNativeCreated(id);
               },
               creationParamsCodec: const StandardMessageCodec(),
             );
-            // nativeView = PlatformViewLink(
-            //   viewType: _uniqueIdentifier,
-            //   surfaceFactory:(BuildContext context, PlatformViewController controller) {
-            //     return AndroidViewSurface(
-            //       controller: controller,
-            //       hitTestBehavior: PlatformViewHitTestBehavior.opaque,
-            //       gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
-            //     );
-            //   },
-            //   onCreatePlatformView: (PlatformViewCreationParams params) {
-            //     return PlatformViewsService.initSurfaceAndroidView(
-            //       id: params.id,
-            //       viewType: _uniqueIdentifier,
-            //       layoutDirection: TextDirection.ltr,
-            //       creationParams: creationParams,
-            //       creationParamsCodec: StandardMessageCodec(),
-            //     )..addOnPlatformViewCreatedListener((id){
-            //       params.onPlatformViewCreated(id);
-            //       widget.controller.onNativeCreated(id);
-            //     })
-            //       ..create();
-            //   },
-            // );
           }
-          print("ratio:::$ratio LayoutBuilder");
           return Container(
-            color: Colors.red,
-            child: Center(
-              child: Container(
-                color: Colors.transparent,
-                width: cc.maxWidth,
-                height: cc.maxHeight,
-                child: Container(
-                  color: Colors.transparent,
-                  child: Center(
-                    child: IgnorePointer(
-                      child: nativeView,
-                      ignoring: false,
-                    ),
-                  ),
-                ),
+            width: width,
+            height: height,
+            child: ClipRect(
+              child: IgnorePointer(
+                child: nativeView,
+                ignoring: false,
               ),
             ),
-            width: cc.maxWidth,
-            height: cc.maxHeight,
           );
         },
       );
@@ -232,8 +191,8 @@ class _WhiteboardState extends State<Whiteboard>{
   }
 }
 
-typedef Future<void> ExitRoom(DataModel arg);
-typedef void HistorySyncCompleted();
+typedef Future<NilData> ExitRoom(DataModel arg);
+typedef NilData HistorySyncCompleted();
 typedef Future<DataModel> ReceiveData(ReceivedData arg);
 class PigeonFlutterApiImpl extends PigeonFlutterApi {
   ExitRoom exitRoomCallback;
@@ -241,9 +200,10 @@ class PigeonFlutterApiImpl extends PigeonFlutterApi {
   HistorySyncCompleted syncCompletedCallback;
   PigeonFlutterApiImpl({@required this.exitRoomCallback,@required this.receiveDataCallback,@required this.syncCompletedCallback});
   @override
-  Future<void> exitRoom(DataModel arg) {
+  Future<NilData> exitRoom(DataModel arg) {
     return exitRoomCallback?.call(arg);
   }
+
 
   @override
   Future<DataModel> receiveData(ReceivedData arg) {
@@ -252,8 +212,8 @@ class PigeonFlutterApiImpl extends PigeonFlutterApi {
   }
 
   @override
-  void historySyncCompleted() {
-    this.syncCompletedCallback?.call();
+  NilData historySyncCompleted() {
+   return this.syncCompletedCallback?.call();
   }
 }
 
@@ -261,11 +221,6 @@ class PigeonFlutterApiImpl extends PigeonFlutterApi {
 class WhiteboardController {//extends Listener
   PigeonApi _api =  PigeonApi();
 
-  String _boardRatio = "4:3";
-
-  String  get  boardRatio {
-    return _boardRatio;
-  }
   WhiteboardController();
 
   Set<Function>_createdListener=Set();
@@ -281,11 +236,8 @@ class WhiteboardController {//extends Listener
     return _api.setBackgroundColor(StringData()..value = color);
   }
   Future<DataModel> joinClass(int classId) {
-    final ratio=boardRatio;
-    print("ratio:::$ratio");
     return _api.joinClass(JoinClassRequest()
       ..roomId=classId
-      ..boardRatio=ratio
     ).then((value){
       if(value.code==-1){
         print("joinClass # ${value.msg}");
@@ -336,9 +288,8 @@ class WhiteboardController {//extends Listener
     _state=null;
   }
 
-  void onNativeCreated(int id, String ratio) {
+  void onNativeCreated(int id) {
     _isCreated=true;
-    _boardRatio=ratio;
     _alreadyCreated();
   }
 

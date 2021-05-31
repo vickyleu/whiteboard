@@ -46,7 +46,7 @@ public class AwareManager : NSObject, BoardAwareInterface{
        
         ticCallback(TICModule.TICMODULE_IMSDK,1,"预创建参数初始化成功")
     }
-    func joinClass(_ classroomOption:TICClassroomOption,_ boardRatio:String,ticCallback: @escaping TICCallback) {
+    func joinClass(_ classroomOption:TICClassroomOption,ticCallback: @escaping TICCallback) {
         classroomOption.boardDelegate = boardAware?.mBoardCallback
         mTicManager.initTEduBoard(classroomOption)
         guard let boardController =  mTicManager.getBoardController() else {
@@ -54,11 +54,11 @@ public class AwareManager : NSObject, BoardAwareInterface{
             return
         }
         boardController.setGlobalBackgroundColor(UIColor.clear)
-        
-        boardController.setBoardRatio(boardRatio)
-        
         boardAware?.mBoard = boardController
-        classroomOption.boardDelegate?.onTEBInit() ///腾讯的Android和iOS回调不同步,这里手动调用,保证在业务层处理逻辑是一样的.反正回调中我会判断画板是否已经准备就绪的
+        classroomOption.boardDelegate?.onTEBInit()
+       
+       
+        ///腾讯的Android和iOS回调不同步,这里手动调用,保证在业务层处理逻辑是一样的.反正回调中我会判断画板是否已经准备就绪的
         ticCallback(TICModule.TICMODULE_IMSDK,1,"创建课堂 成功, 房间号 \(classroomOption.classId)")
     }
     
@@ -101,7 +101,7 @@ public class AwareManager : NSObject, BoardAwareInterface{
             v.code=1
             v.msg="退出成功"
             v.data=nil
-        }) { (error: Error?) in
+        }) { (_,error: Error?) in
 
         }
     }
@@ -120,7 +120,7 @@ public class AwareManager : NSObject, BoardAwareInterface{
 
     /////
     func onTEBHistroyDataSyncCompleted() {
-        flutterApi?.historySyncCompleted{_ in
+        flutterApi?.historySyncCompleted{_,_ in
             
         }
         guard let board = boardAware?.mBoard else { return }
@@ -133,8 +133,14 @@ public class AwareManager : NSObject, BoardAwareInterface{
         guard let board = boardAware?.mBoard else { return }
         guard let boardView : WKWebView = board.getBoardRenderView() as? WKWebView else { return }
         print("addBoardView::::::\(boardView)")
+        if #available(iOS 11.0, *) {
+            boardView.scrollView.contentInsetAdjustmentBehavior = .never
+        }
+        boardView.scrollView.contentInset = .zero
+        boardView.scrollView.backgroundColor=UIColor.clear
         boardView.isOpaque = false
         boardView.backgroundColor = UIColor.clear
+        
         nativeViewLink?.addView(boardView) { (root: UIView, make: MASConstraintMaker?) in
             make?.top.equalTo()(root)
             make?.left.equalTo()(root)

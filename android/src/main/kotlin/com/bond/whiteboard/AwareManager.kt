@@ -75,7 +75,6 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
     ) {
         classroomOption.boardCallback = boardAware?.mBoardCallback
         mTicManager.initTEduBoard(classroomOption)
-        mTicManager.boardController?.boardRatio=ratio
         print("创建课堂 成功, 房间号：${classroomOption.classId}")
         ticCallback.onSuccess(1)
     }
