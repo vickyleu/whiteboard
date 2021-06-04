@@ -28,7 +28,6 @@ class _WhiteboardState extends State<Whiteboard>{
   ValueNotifier<bool> scaleGesture=ValueNotifier(false);
   @override
   void initState(){
-    widget.controller._state=this;
     widget.controller._initCallbackHandler();
     super.initState();
   }
@@ -226,12 +225,8 @@ class WhiteboardController {//extends Listener
   Set<Function>_createdListener=Set();
   bool _isCreated=false;
   bool _isLogin=false;
-  _WhiteboardState _state;
   PigeonFlutterApi _pigeonFlutterApi;
 
-  Future<void> reset() {
-    return _api.reset();
-  }
   Future<void> setBackgroundColor(String color) {
     return _api.setBackgroundColor(StringData()..value = color);
   }
@@ -280,12 +275,27 @@ class WhiteboardController {//extends Listener
     _pigeonFlutterApi=pigeonApiListener;
   }
 
-  void dispose() {
-    _api.quitClass();
+
+  Future<bool> isHaveBackgroundImage() async {
+
+  }
+
+  Future<void> removeBackgroundImage() async{
+
+  }
+
+  Future<void> reset() {
+    return _api.reset();
+  }
+  Future<void> dispose() async {
+    if(_isCreated){
+      _isCreated=false;
+     await _api.quitClass();
+    }
+    _isLogin=false;
+    PigeonFlutterApi.setup(null);
     _pigeonFlutterApi=null;
     _isCreated=false;
-    PigeonFlutterApi.setup(null);
-    _state=null;
   }
 
   void onNativeCreated(int id) {
@@ -316,6 +326,46 @@ class WhiteboardController {//extends Listener
     _isLogin=true;
     _alreadyCreated();
   }
+
+  drawGraffiti() {
+    return _api.drawGraffiti();
+  }
+
+  setToolColor(String color) {
+    return _api.setToolColor(StringData()..value=color);
+  }
+  setToolSize(int size) {
+    return _api.setToolSize(IntData()..value=size);
+  }
+
+  drawLine() {
+    return _api.drawLine();
+  }
+
+  drawSquare() {
+    return _api.drawSquare();
+  }
+
+  drawCircular() {
+    return _api.drawCircular();
+  }
+
+  drawText() {
+    return _api.drawText();
+  }
+
+  eraserDrawer() {
+    return _api.eraserDrawer();
+  }
+
+  rollbackDraw() {
+    return _api.rollbackDraw();
+  }
+
+  wipeDraw() {
+    return _api.wipeDraw();
+  }
+
 
 
 }

@@ -16,14 +16,14 @@ public class AwareManager: NSObject, BoardAwareInterface {
     private let settingCallback = MySettingCallback()
     public var flutterApi: FLTPigeonFlutterApi?
     var drawerType = DrawerType.drawGraffiti
-
+    
     public override init() {
         super.init()
         settingCallback.also { (it: MySettingCallback) in
             it.awareManager = self
         }
     }
-
+    
     func preJoinClassroom(arg: FLTPreJoinClassRequest, ticCallback: @escaping TICCallback) {
         boardAware?.destroy()
         boardAware = BoardAware()
@@ -40,17 +40,17 @@ public class AwareManager: NSObject, BoardAwareInterface {
                     guard  let wtf: TEduBoardController = self.boardAware?.mBoard else {
                         return
                     }
-//                    wtf.addAckData(data) ////
+                    //                    wtf.addAckData(data) ////
                 }
             })
         }
         //1、设置白板的回调
         let mbcallback = MyBoardCallback(self)
         boardAware?.mBoardCallback = mbcallback
-
+        
         ticCallback(TICModule.TICMODULE_IMSDK, 1, "预创建参数初始化成功")
     }
-
+    
     func joinClass(_ classroomOption: TICClassroomOption, ticCallback: @escaping TICCallback) {
         classroomOption.boardDelegate = boardAware?.mBoardCallback
         mTicManager.initTEduBoard(classroomOption)
@@ -61,50 +61,55 @@ public class AwareManager: NSObject, BoardAwareInterface {
         boardController.setGlobalBackgroundColor(UIColor.clear)
         boardAware?.mBoard = boardController
         classroomOption.boardDelegate?.onTEBInit()
-
-
+        
+        
         ///腾讯的Android和iOS回调不同步,这里手动调用,保证在业务层处理逻辑是一样的.反正回调中我会判断画板是否已经准备就绪的
         ticCallback(TICModule.TICMODULE_IMSDK, 1, "创建课堂 成功, 房间号 \(classroomOption.classId)")
     }
-
+    
     //////
-
+    
     func drawGraffiti() {
         guard (drawerType != DrawerType.drawGraffiti) else {
             return
         }
+        drawerType = DrawerType.drawGraffiti
         boardAware?.mBoard?.setToolType(TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_PEN)
     }
-
+    
     func drawLine() {
         guard (drawerType != DrawerType.drawLine) else {
             return
         }
+        drawerType = DrawerType.drawLine
         boardAware?.mBoard?.setToolType(TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_LINE)
     }
-
+    
     func drawSquare() {
         guard (drawerType != DrawerType.drawSquare) else {
             return
         }
+        drawerType = DrawerType.drawSquare
         boardAware?.mBoard?.setToolType(TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_RECT)
     }
-
+    
     func drawCircular() {
         guard (drawerType != DrawerType.drawCircular) else {
             return
         }
+        drawerType = DrawerType.drawCircular
         boardAware?.mBoard?.setToolType(TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_OVAL)
     }
-
+    
     func drawText() {
         guard (drawerType != DrawerType.drawText) else {
             return
         }
+        drawerType = DrawerType.drawText
         boardAware?.mBoard?.setTextStyle(TEduBoardTextStyle.TEDU_BOARD_TEXT_STYLE_NORMAL)
         boardAware?.mBoard?.setToolType(TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_TEXT)
     }
-
+    
     func eraserDrawer() {
         guard (drawerType != DrawerType.eraserDrawer) else {
             return
@@ -119,17 +124,60 @@ public class AwareManager: NSObject, BoardAwareInterface {
         boardAware?.mBoard?.setToolType(TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_ERASER)
         boardAware?.mBoard?.setEraseLayerType(arr)
     }
-
+    
     func rollbackDraw() {
         boardAware?.mBoard?.undo()
     }
-
+    
     func wipeDraw() {
         boardAware?.mBoard?.clearDraws()
     }
-
+    
+    func setToolColor(color:UIColor){
+        switch drawerType {
+        case .drawGraffiti:
+            boardAware?.mBoard?.setBrush(color)
+            break
+        case .drawLine:
+            boardAware?.mBoard?.setBrush(color)
+            break
+        case .drawSquare:
+            boardAware?.mBoard?.setBrush(color)
+            break
+        case .drawCircular:
+            boardAware?.mBoard?.setBrush(color)
+            break
+        case .drawText:
+            boardAware?.mBoard?.setTextColor(color)
+            break
+        case .eraserDrawer:
+            break
+        }
+    }
+    func setToolSize(size:Int){
+        switch drawerType {
+        case .drawGraffiti:
+            boardAware?.mBoard?.setBrushThin(UInt32(size))
+            break
+        case .drawLine:
+            boardAware?.mBoard?.setBrushThin(UInt32(size))
+            break
+        case .drawSquare:
+            boardAware?.mBoard?.setBrushThin(UInt32(size))
+            break
+        case .drawCircular:
+            boardAware?.mBoard?.setBrushThin(UInt32(size))
+            break
+        case .drawText:
+            boardAware?.mBoard?.setTextSize(UInt32(size))
+            break
+        case .eraserDrawer:
+            break
+        }
+    }
+    
     //////
-
+    
     func onTEBSyncData(data: String) {
         let model = FLTReceivedData()
         model.data = FlutterStandardTypedData(bytes: data.data(using: .utf8)!)
@@ -141,21 +189,22 @@ public class AwareManager: NSObject, BoardAwareInterface {
             }
         })
     }
-
+    
     func reset() {
         boardAware?.reset()
+        drawerType = DrawerType.drawGraffiti
     }
-
+    
     func setBackgroundColor(_ color: UIColor) {
         boardAware?.setBackgroundColor(color)
     }
-
+    
     func addBackgroundImage(url: String) {
         boardAware?.mBoard?.setBackgroundImage(url, mode: TEduBoardImageFitMode.TEDU_BOARD_IMAGE_FIT_MODE_CENTER)
     }
-
+    
     func quitClassroom() {
-
+        
         boardAware?.destroy()
         mTicManager.quitClassroom(true, callback: { _, errCode, errMsg in
             if (errCode == -1) {
@@ -171,11 +220,11 @@ public class AwareManager: NSObject, BoardAwareInterface {
             v.msg = "退出成功"
             v.data = nil
         }) { (_, error: Error?) in
-
+            
         }
     }
-
-
+    
+    
     func receiveData(data: [UInt8], callback: @escaping TICCallback) {
         do {
             let string = try String(bytes: data, encoding: .utf8)
@@ -185,12 +234,12 @@ public class AwareManager: NSObject, BoardAwareInterface {
             callback(TICModule.TICMODULE_IMSDK, -1, "addSyncData failed: \(error)")
         }
     }
-
-
+    
+    
     /////
     func onTEBHistroyDataSyncCompleted() {
         flutterApi?.historySyncCompleted { _, _ in
-
+            
         }
         guard let board = boardAware?.mBoard else {
             return
@@ -201,7 +250,7 @@ public class AwareManager: NSObject, BoardAwareInterface {
         let currentFile = board.getCurrentFile()
         print("DataSyncCompleted currentBoard:\(currentBoard) currentFile:\(currentFile)")
     }
-
+    
     func addBoardView() {
         guard let board = boardAware?.mBoard else {
             return
@@ -217,7 +266,7 @@ public class AwareManager: NSObject, BoardAwareInterface {
         boardView.scrollView.backgroundColor = UIColor.clear
         boardView.isOpaque = false
         boardView.backgroundColor = UIColor.clear
-
+        
         nativeViewLink?.addView(boardView) { (root: UIView, make: MASConstraintMaker?) in
             make?.top.equalTo()(root)
             make?.left.equalTo()(root)
@@ -225,30 +274,30 @@ public class AwareManager: NSObject, BoardAwareInterface {
             make?.bottom.equalTo()(root)
         }
     }
-
+    
     func removeBoardView() {
         guard let boardView = boardAware?.mBoard?.getBoardRenderView() else {
             return
         }
         nativeViewLink?.removeView(boardView)
     }
-
+    
     func setCanUndo(_ canUndo: Bool) {
         settingCallback.setCanUndo(canUndo)
     }
-
+    
     func setCanRedo(_ canredo: Bool) {
         settingCallback.setCanRedo(canredo)
     }
-
+    
     func addFile(_ fileId: String?) -> TEduBoardFileInfo? {
         return nil
     }
-
+    
     func onTextComponentStatusChange(_ id: String?, _ status: String?) {
         //
     }
-
+    
     func receiveIds(id: String, type: Int) {
         //rtcAware?.mImgsFid
     }

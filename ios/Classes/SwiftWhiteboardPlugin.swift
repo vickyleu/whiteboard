@@ -2,6 +2,20 @@ import Flutter
 import UIKit
 
 public class SwiftWhiteboardPlugin: NSObject, FlutterPlugin,FLTPigeonApi {
+    public func setToolColor(_ arg: FLTStringData?, completion: @escaping (FLTNilData?, FlutterError?) -> Void) {
+        if(arg != nil){
+            awareManager.setToolColor(color: UIColor.init(hex: arg!.value!))
+        }
+        completion(FLTNilData(),nil)
+    }
+    
+    public func setToolSize(_ arg: FLTIntData?, completion: @escaping (FLTNilData?, FlutterError?) -> Void) {
+        if(arg != nil){
+            awareManager.setToolSize(size: arg!.value!.intValue)
+        }
+        completion(FLTNilData(),nil)
+    }
+    
     public func drawGraffiti(_ completion: @escaping (FLTNilData?, FlutterError?) -> Void) {
         awareManager.drawGraffiti()
         completion(FLTNilData(),nil)

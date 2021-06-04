@@ -55,6 +55,9 @@ class _MyAppState extends State<MyApp> {
   var initialOptionPosition = 0;
   final userAvailableMap = HashMap<String, Map>();
 
+  var mToolType="icon_graffiti";
+  var mToolSizeRatio=1;//1~100
+
   var mCameraOpen=true;
   var mMicOpen=true;
 
@@ -71,7 +74,8 @@ class _MyAppState extends State<MyApp> {
     ]);
     SystemChrome.setEnabledSystemUIOverlays(
         [SystemUiOverlay.top, SystemUiOverlay.bottom]);
-    // widget._whiteboardController.dispose();
+    _exitWhiteboard();
+
     super.dispose();
   }
 
@@ -104,35 +108,35 @@ class _MyAppState extends State<MyApp> {
     String pwdStr = UserSigGenerate.genTestSig(appid, secret, userId);
     widget._whiteboardController.addPigeonApiListener(
         new PigeonFlutterApiImpl(exitRoomCallback: (arg) async {
-      if (mounted) {
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
-        }
-      }
-      return NilData();
-    }, receiveDataCallback: (arg) async {
-      final conversation = await TencentImSDKPlugin.v2TIMManager
-          .getConversationManager()
-          .getConversation(conversationID: "group_$classId");
-      String receive = new String.fromCharCodes(arg.data);
-      await TencentImSDKPlugin.v2TIMManager.v2TIMMessageManager
-          .sendCustomMessage(
-        data: receive,
-        receiver: null,
-        groupID: "$classId",
-        extension: "TXWhiteBoardExt",
-        priority: 1,
-        isExcludedFromUnreadCount: true,
-        // offlinePushInfo: OfflinePushInfo()
-      );
-      return DataModel()
-        ..code = 1
-        ..msg = "接收成功了";
-    }, syncCompletedCallback: () {
-      _whiteboardSyncCompleted();
-      initTRTC(appid, userId, pwdStr, classId);
-      return NilData();
-    }));
+          if (mounted) {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            }
+          }
+          return NilData();
+        }, receiveDataCallback: (arg) async {
+          final conversation = await TencentImSDKPlugin.v2TIMManager
+              .getConversationManager()
+              .getConversation(conversationID: "group_$classId");
+          String receive = new String.fromCharCodes(arg.data);
+          await TencentImSDKPlugin.v2TIMManager.v2TIMMessageManager
+              .sendCustomMessage(
+            data: receive,
+            receiver: null,
+            groupID: "$classId",
+            extension: "TXWhiteBoardExt",
+            priority: 1,
+            isExcludedFromUnreadCount: true,
+            // offlinePushInfo: OfflinePushInfo()
+          );
+          return DataModel()
+            ..code = 1
+            ..msg = "接收成功了";
+        }, syncCompletedCallback: () {
+          _whiteboardSyncCompleted();
+          initTRTC(appid, userId, pwdStr, classId);
+          return NilData();
+        }));
     widget._whiteboardController.addCreatedListener(() {
       print("有点卵用吗");
       _created(classId, appid, userId, pwdStr);
@@ -170,25 +174,25 @@ class _MyAppState extends State<MyApp> {
     );
     timManager.getMessageManager().addAdvancedMsgListener(
         listener: new V2TimAdvancedMsgListener(onRecvNewMessage: (msg) {
-      if (msg.groupID != null &&
-          msg.customElem.extension == "TXWhiteBoardExt") {
-        final receive = msg.customElem.data;
-        var outputAsUint8List = new Uint8List.fromList(receive.codeUnits);
-        widget._whiteboardController.receiveMsg(outputAsUint8List);
-      }
-    }));
+          if (msg.groupID != null &&
+              msg.customElem.extension == "TXWhiteBoardExt") {
+            final receive = msg.customElem.data;
+            var outputAsUint8List = new Uint8List.fromList(receive.codeUnits);
+            widget._whiteboardController.receiveMsg(outputAsUint8List);
+          }
+        }));
   }
 
   void enterRoom(int appID, String userId, String userSig, int classId) {
     widget.trtcCloud.registerListener(onRtcListener);
     widget.trtcCloud
         .enterRoom(
-            TRTCParams(
-                sdkAppId: appID, //应用Id
-                userId: userId, // 用户Id
-                userSig: userSig, // 用户签名
-                roomId: classId), //房间Id
-            TRTCCloudDef.TRTC_APP_SCENE_VIDEOCALL)
+        TRTCParams(
+            sdkAppId: appID, //应用Id
+            userId: userId, // 用户Id
+            userSig: userSig, // 用户签名
+            roomId: classId), //房间Id
+        TRTCCloudDef.TRTC_APP_SCENE_VIDEOCALL)
         .then((value) {
       print("进房成功没有");
 
@@ -198,11 +202,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   _whiteboardSyncCompleted() {
-    widget._whiteboardController.reset().then((value) async {
-      _switchBackgroundVisible();
-      // widget._whiteboardController.setBackgroundColor("#222222");
-      widget._whiteboardController.setBackgroundColor("#F5F6FA");
-    });
+    widget._whiteboardController.setBackgroundColor("#F5F6FA");
+    _switchBackgroundVisible();
   }
 
   _created(int groupId, int appid, String userId, String userSig) {
@@ -221,12 +222,12 @@ class _MyAppState extends State<MyApp> {
         };
         TencentImSDKPlugin.v2TIMManager
             .createGroup(
-                groupType:
-                    // "AVChatRoom"
-                    // "Meeting"
-                    "Public",
-                groupName: "interact group",
-                groupID: "$groupId")
+            groupType:
+            // "AVChatRoom"
+            // "Meeting"
+            "Public",
+            groupName: "interact group",
+            groupID: "$groupId")
             .then((value) async {
           if (value.code == 0) {
             enterRoom();
@@ -255,17 +256,18 @@ class _MyAppState extends State<MyApp> {
 
     return Scaffold(
       backgroundColor: Color(0xFFF5F6FA),
+      resizeToAvoidBottomInset: false,
       body: Container(
           color: Color(0xFFF5F6FA),
           padding: EdgeInsets.only(
               right: () sync* {
-            final right = MediaQuery.of(context).padding.right;
-            if (right > 0) {
-              yield right;
-            } else {
-              yield 15.toDouble();
-            }
-          }()
+                final right = MediaQuery.of(context).padding.right;
+                if (right > 0) {
+                  yield right;
+                } else {
+                  yield 15.toDouble();
+                }
+              }()
                   .last),
           child: Row(
             children: [
@@ -309,14 +311,14 @@ class _MyAppState extends State<MyApp> {
                                           child: Center(
                                             child: Row(
                                               mainAxisAlignment:
-                                                  MainAxisAlignment.center,
+                                              MainAxisAlignment.center,
                                               children: [
                                                 Padding(
                                                   padding:
-                                                      EdgeInsets.only(right: 6),
+                                                  EdgeInsets.only(right: 6),
                                                   child: ImageViewLocal(
                                                       placeHolder:
-                                                          "icon_exit_whiteboard",
+                                                      "icon_exit_whiteboard",
                                                       size: 18,
                                                       height: 18,
                                                       fit: BoxFit.fill),
@@ -333,7 +335,7 @@ class _MyAppState extends State<MyApp> {
                                           decoration: BoxDecoration(
                                               color: Colors.white,
                                               borderRadius:
-                                                  BorderRadius.circular(20)),
+                                              BorderRadius.circular(20)),
                                         ),
                                         onPressed: () {
                                           _exitWhiteboard();
@@ -348,14 +350,14 @@ class _MyAppState extends State<MyApp> {
                                         child: Center(
                                           child: Row(
                                             mainAxisAlignment:
-                                                MainAxisAlignment.center,
+                                            MainAxisAlignment.center,
                                             children: [
                                               Padding(
                                                 padding:
-                                                    EdgeInsets.only(right: 6),
+                                                EdgeInsets.only(right: 6),
                                                 child: ImageViewLocal(
                                                     placeHolder:
-                                                        "icon_background_visible",
+                                                    "icon_background_visible",
                                                     size: 18,
                                                     height: 18,
                                                     fit: BoxFit.fill),
@@ -372,7 +374,7 @@ class _MyAppState extends State<MyApp> {
                                         decoration: BoxDecoration(
                                             color: Colors.white,
                                             borderRadius:
-                                                BorderRadius.circular(20)),
+                                            BorderRadius.circular(20)),
                                       ),
                                       onPressed: () {
                                         _switchBackgroundVisible();
@@ -404,23 +406,13 @@ class _MyAppState extends State<MyApp> {
                           bottom: cc.maxHeight * (4 / 345.0)),
                       child: Column(
                         children: () sync* {
-                          final icons = [
-                            "icon_graffiti",
-                            "icon_line",
-                            "icon_square",
-                            "icon_circular",
-                            "icon_text",
-                            "icon_eraser",
-                            "icon_rollback",
-                            "icon_wipe"
-                          ];
-                          yield* icons.asMap().map((key, element) {
+                          yield* listCommand.asMap().map((key, element) {
                             return MapEntry(
                                 key,
                                 CupertinoButton(
                                     child: Container(
                                       height: cc.maxHeight *
-                                          (((345.0 - 4 * 2) / icons.length) /
+                                          (((345.0 - 4 * 2) / listCommand.length) /
                                               (345.0)),
                                       width: double.infinity,
                                       child: Center(
@@ -431,7 +423,7 @@ class _MyAppState extends State<MyApp> {
                                             builder: (context, cc) {
                                               return ImageViewLocal(
                                                   placeHolder:
-                                                      "$element${initialOptionPosition == key ? "_selected" : ""}",
+                                                  "$element${initialOptionPosition == key ? "_selected" : ""}",
                                                   size: cc.maxWidth,
                                                   height: cc.maxHeight,
                                                   fit: BoxFit.fill);
@@ -446,8 +438,8 @@ class _MyAppState extends State<MyApp> {
                                     minSize: 0,
                                     padding: EdgeInsets.zero,
                                     onPressed: () {
-                                      _executeCommand(key);
-                                      if (key < icons.length - 2) {
+                                      _executeCommand(element);
+                                      if (key < listCommand.length - 2) {
                                         initialOptionPosition = key;
                                         setState(() {});
                                       }
@@ -464,9 +456,43 @@ class _MyAppState extends State<MyApp> {
           )),
     );
   }
+  final List<String> listCommand=[
+    "icon_graffiti","icon_line","icon_square","icon_circular","icon_text","icon_eraser",
+    "icon_rollback","icon_wipe"
+  ];
+  Future<void> _executeCommand(String command) async {
+    if(mToolType==command&&mToolType!="icon_eraser"){
 
-  void _executeCommand(int command){
-    // await
+    }
+    switch(command){
+      case "icon_graffiti":
+        await widget._whiteboardController.drawGraffiti();
+        break;
+      case  "icon_line":
+        await widget._whiteboardController.drawLine();
+        break;
+      case "icon_square":
+        await widget._whiteboardController.drawSquare();
+        break;
+      case  "icon_circular":
+        await widget._whiteboardController.drawCircular();
+        break;
+      case "icon_text":
+        await widget._whiteboardController.drawText();
+        break;
+      case "icon_eraser":
+        await widget._whiteboardController.eraserDrawer();
+        break;
+      case "icon_rollback":
+        await widget._whiteboardController.rollbackDraw();
+        return;
+        break;
+      case "icon_wipe":
+        await widget._whiteboardController.wipeDraw();
+        return;
+        break;
+    }
+    mToolType=command;
   }
   Widget _profileArea() {
     ValueKey remoteKey = ValueKey(remoteUserId);
@@ -644,9 +670,13 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  void _switchBackgroundVisible() {
-    widget._whiteboardController.addBackgroundImage(
-        "https://5b0988e595225.cdn.sohucs.com/q_70,c_zoom,w_640/images/20180409/3ba0912dbd894d9fb25ca074046ee4f4.jpeg");
+  Future<void> _switchBackgroundVisible() async {
+    bool have=await widget._whiteboardController.isHaveBackgroundImage();
+    if(have){
+      widget._whiteboardController.removeBackgroundImage();
+    }else{
+      widget._whiteboardController.addBackgroundImage("https://5b0988e595225.cdn.sohucs.com/q_70,c_zoom,w_640/images/20180409/3ba0912dbd894d9fb25ca074046ee4f4.jpeg");
+    }
   }
 
   /// 事件回调
@@ -687,7 +717,7 @@ class _MyAppState extends State<MyApp> {
 
       });
     } else
-    // 远端用户进房
+      // 远端用户进房
     if (type == TRTCCloudListener.onRemoteUserEnterRoom) {
       print("===== 远端用户进房 ===${param}");
       //当自己是电话发起者需要统计电话时长
@@ -764,5 +794,7 @@ class _MyAppState extends State<MyApp> {
 
   showErrordDialog(String error) {}
 
-  void _exitWhiteboard() {}
+  void _exitWhiteboard() {
+    widget._whiteboardController.dispose();
+  }
 }

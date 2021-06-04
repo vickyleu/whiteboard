@@ -87,6 +87,10 @@ abstract class PigeonApi {
 
   @async
   NilData wipeDraw();
+  @async
+  NilData setToolColor(StringData color);
+  @async
+  NilData setToolSize(IntData size);
 }
 
 ///原生平台持有的Flutter通道,原生调用Flutter方法
