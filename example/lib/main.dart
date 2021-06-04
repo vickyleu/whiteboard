@@ -130,7 +130,7 @@ class _MyAppState extends State<MyApp> {
         ..msg = "接收成功了";
     }, syncCompletedCallback: () {
       _whiteboardSyncCompleted();
-      // initTRTC(appid, userId, pwdStr, classId);
+      initTRTC(appid, userId, pwdStr, classId);
       return NilData();
     }));
     widget._whiteboardController.addCreatedListener(() {
