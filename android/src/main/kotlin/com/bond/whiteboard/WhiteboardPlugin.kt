@@ -192,6 +192,25 @@ class WhiteboardPlugin: FlutterPlugin,ActivityAware {
       result?.success(PigeonPlatformMessage.NilData())
     }
 
+    override fun setToolColor(
+      arg: PigeonPlatformMessage.StringData?,
+      result: PigeonPlatformMessage.Result<PigeonPlatformMessage.NilData>?) {
+      if(arg!=null){
+        awareManager.setToolColor(arg.value!!)
+      }
+      result?.success(PigeonPlatformMessage.NilData())
+    }
+
+    override fun setToolSize(
+      arg: PigeonPlatformMessage.IntData?,
+      result: PigeonPlatformMessage.Result<PigeonPlatformMessage.NilData>?
+    ) {
+      if(arg!=null){
+        awareManager.setToolSize(arg.value!!.toInt())
+      }
+      result?.success(PigeonPlatformMessage.NilData())
+    }
+
     ///////
   }
 

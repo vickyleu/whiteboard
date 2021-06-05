@@ -82,6 +82,7 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
 
     fun reset() {
         boardAware?.reset()
+        drawerType = DrawerType.drawGraffiti
     }
     fun setBackgroundColor(@ColorInt color:Int) {
         boardAware?.setBackgroundColor(color)
@@ -196,32 +197,38 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
 
     fun drawGraffiti() {
         if(drawerType==DrawerType.drawGraffiti)return
+        drawerType=DrawerType.drawGraffiti
         boardAware?.mBoard?.toolType = TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_PEN
     }
 
     fun drawLine() {
         if(drawerType==DrawerType.drawLine)return
+        drawerType=DrawerType.drawLine
         boardAware?.mBoard?.toolType = TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_LINE
     }
 
     fun drawSquare() {
         if(drawerType==DrawerType.drawSquare)return
+        drawerType=DrawerType.drawSquare
         boardAware?.mBoard?.toolType = TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_RECT
     }
 
     fun drawCircular() {
         if(drawerType==DrawerType.drawCircular)return
+        drawerType=DrawerType.drawCircular
         boardAware?.mBoard?.toolType = TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_OVAL
     }
 
     fun drawText() {
         if(drawerType==DrawerType.drawText)return
+        drawerType=DrawerType.drawText
         boardAware?.mBoard?.textStyle = TEduBoardController.TEduBoardTextStyle.TEDU_BOARD_TEXT_STYLE_NORMAL
         boardAware?.mBoard?.toolType = TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_TEXT
     }
 
     fun eraserDrawer() {
         if(drawerType==DrawerType.eraserDrawer)return
+        drawerType=DrawerType.eraserDrawer
         val arr : ArrayList<Int> = arrayListOf<Int>(TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_LINE,
             TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_OVAL,
             TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_PEN,
@@ -237,6 +244,51 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
 
     fun wipeDraw() {
         boardAware?.mBoard?.clear(false)
+    }
+
+    fun setToolColor(value: String) {
+        val color=TEduBoardController.TEduBoardColor(value)
+        when(drawerType) {
+            DrawerType.drawGraffiti->{
+                boardAware?.mBoard?.brushColor=color
+            }
+            DrawerType.drawLine->{
+                boardAware?.mBoard?.brushColor=color
+            }
+            DrawerType .drawSquare->{
+                boardAware?.mBoard?.brushColor=color
+            }
+            DrawerType .drawCircular->{
+                boardAware?.mBoard?.brushColor=color
+            }
+            DrawerType .drawText->{
+                boardAware?.mBoard?.textColor=color
+            }
+            DrawerType .eraserDrawer->{
+            }
+        }
+    }
+
+    fun setToolSize(size: Int) {
+        when(drawerType) {
+            DrawerType.drawGraffiti->{
+                boardAware?.mBoard?.brushThin = size
+            }
+            DrawerType .drawLine->{
+                boardAware?.mBoard?.brushThin = size
+            }
+            DrawerType .drawSquare->{
+                boardAware?.mBoard?.brushThin = size
+            }
+            DrawerType .drawCircular->{
+                boardAware?.mBoard?.brushThin = size
+            }
+            DrawerType .drawText->{
+                boardAware?.mBoard?.textSize = size
+            }
+            DrawerType .eraserDrawer->{
+            }
+        }
     }
 
 }
