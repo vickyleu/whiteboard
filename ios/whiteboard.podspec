@@ -15,7 +15,7 @@ A new Flutter plugin project for tencent whiteboard.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*','pigeon/**/*','tencent/**/*'
   s.dependency 'Flutter'
-  s.platform = :ios, '10.0'
+  s.platform = :ios, '9.0'
   # 默认集成全部第三方 SDK
   s.dependency 'TEduBoard_iOS', '2.6.0.39'
   s.dependency 'Masonry', '1.1.0'
