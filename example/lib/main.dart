@@ -99,9 +99,8 @@ class _MyAppState extends State<MyApp> {
   initSDK() async {
     WidgetsFlutterBinding.ensureInitialized();
 
-    final secret =
-        "c063ff07273be5bd38996d09a623c10485c7c009b139f69259e1d204084eb54d";
-    final appid = 1400492258;
+    final secret ="tencent secret key";
+    final appid = 000;///tencent appid
 
     final int classId = 123;
     V2TIMManager timManager = TencentImSDKPlugin.v2TIMManager;
