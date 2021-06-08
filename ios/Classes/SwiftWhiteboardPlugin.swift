@@ -2,6 +2,17 @@ import Flutter
 import UIKit
 
 public class SwiftWhiteboardPlugin: NSObject, FlutterPlugin,FLTPigeonApi {
+    public func isHaveBackgroundImage(_ completion: @escaping (FLTBoolData?, FlutterError?) -> Void) {
+        let bd=FLTBoolData()
+        bd.value=NSNumber(value: awareManager.isHaveBackgroundImage)
+        completion(bd,nil)
+    }
+    
+    public func removeBackgroundImage(_ completion: @escaping (FLTNilData?, FlutterError?) -> Void) {
+        awareManager.removeBackgroundImage()
+        completion(FLTNilData(),nil)
+    }
+    
     public func setToolColor(_ arg: FLTStringData?, completion: @escaping (FLTNilData?, FlutterError?) -> Void) {
         if(arg != nil){
             awareManager.setToolColor(color: UIColor.init(hex: arg!.value!))

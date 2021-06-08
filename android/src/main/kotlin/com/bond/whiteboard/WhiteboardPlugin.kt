@@ -146,6 +146,17 @@ class WhiteboardPlugin: FlutterPlugin,ActivityAware {
       }
       result?.success(PigeonPlatformMessage.NilData())
     }
+
+    override fun isHaveBackgroundImage(result: PigeonPlatformMessage.Result<PigeonPlatformMessage.BoolData>?) {
+      val value=PigeonPlatformMessage.BoolData()
+      value.value=awareManager.isHaveImageBackground
+      result?.success(value)
+    }
+
+    override fun removeBackgroundImage(result: PigeonPlatformMessage.Result<PigeonPlatformMessage.NilData>?) {
+      awareManager.removeImageBackground()
+      result?.success(PigeonPlatformMessage.NilData())
+    }
     //////
 
 

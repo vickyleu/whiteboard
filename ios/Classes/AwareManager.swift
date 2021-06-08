@@ -16,12 +16,17 @@ public class AwareManager: NSObject, BoardAwareInterface {
     private let settingCallback = MySettingCallback()
     public var flutterApi: FLTPigeonFlutterApi?
     var drawerType = DrawerType.drawGraffiti
-    
+    var isHaveBackgroundImage=false
     public override init() {
         super.init()
         settingCallback.also { (it: MySettingCallback) in
             it.awareManager = self
         }
+    }
+    
+
+    func removeBackgroundImage(){
+        wipeDraw()
     }
     
     func preJoinClassroom(arg: FLTPreJoinClassRequest, ticCallback: @escaping TICCallback) {
@@ -131,6 +136,7 @@ public class AwareManager: NSObject, BoardAwareInterface {
     
     func wipeDraw() {
         boardAware?.mBoard?.clearDraws()
+        isHaveBackgroundImage = false
     }
     
     func setToolColor(color:UIColor){
@@ -193,6 +199,7 @@ public class AwareManager: NSObject, BoardAwareInterface {
     func reset() {
         boardAware?.reset()
         drawerType = DrawerType.drawGraffiti
+        isHaveBackgroundImage = false
     }
     
     func setBackgroundColor(_ color: UIColor) {
@@ -201,11 +208,12 @@ public class AwareManager: NSObject, BoardAwareInterface {
     
     func addBackgroundImage(url: String) {
         boardAware?.mBoard?.setBackgroundImage(url, mode: TEduBoardImageFitMode.TEDU_BOARD_IMAGE_FIT_MODE_CENTER)
+        isHaveBackgroundImage = true
     }
     
     func quitClassroom() {
-        
         boardAware?.destroy()
+        isHaveBackgroundImage = false
         mTicManager.quitClassroom(true, callback: { _, errCode, errMsg in
             if (errCode == -1) {
                 print("mother fucker  退出白板失败:\(errCode)  \(errMsg)")

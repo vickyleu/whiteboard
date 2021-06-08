@@ -277,11 +277,11 @@ class WhiteboardController {//extends Listener
 
 
   Future<bool> isHaveBackgroundImage() async {
-
+    return (await _api.isHaveBackgroundImage()).value;
   }
 
   Future<void> removeBackgroundImage() async{
-
+    await _api.removeBackgroundImage();
   }
 
   Future<void> reset() {

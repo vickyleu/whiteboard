@@ -25,7 +25,7 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
     var nativeViewLink: NativeViewLink?=null
     var flutterApi: PigeonPlatformMessage.PigeonFlutterApi?=null
     var drawerType = DrawerType.drawGraffiti
-
+    var isHaveImageBackground = false
     private val settingCallback = MySettingCallback().also {
         it.awareManager=this
     }
@@ -83,12 +83,14 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
     fun reset() {
         boardAware?.reset()
         drawerType = DrawerType.drawGraffiti
+        isHaveImageBackground=false
     }
     fun setBackgroundColor(@ColorInt color:Int) {
         boardAware?.setBackgroundColor(color)
     }
     fun quitClassroom() {
         boardAware?.destroy()
+        isHaveImageBackground=false
         mTicManager.quitClassroom(true,object :TICCallback<Any>{
             override fun onSuccess(data: Any) {
                 removeBoardView()
@@ -166,6 +168,7 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
 
     fun addBackgroundImage(url: String) {
         boardAware?.mBoard?.setBackgroundImage(url, TEduBoardController.TEduBoardImageFitMode.TEDU_BOARD_IMAGE_FIT_MODE_CENTER)
+        isHaveImageBackground=true
     }
 
 
@@ -289,6 +292,11 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
             DrawerType .eraserDrawer->{
             }
         }
+    }
+
+
+    fun removeImageBackground() {
+        wipeDraw()
     }
 
 }

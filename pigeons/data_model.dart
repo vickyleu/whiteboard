@@ -39,6 +39,9 @@ class IntData {
 class NilData {
   int value;
 }
+class BoolData {
+  bool value;
+}
 
 ///Flutter持有的原生平台通道,Flutter调用原生方法
 @HostApi()
@@ -63,6 +66,12 @@ abstract class PigeonApi {
 
   @async
   NilData addBackgroundImage(StringData url);
+
+  @async
+  BoolData isHaveBackgroundImage();
+
+  @async
+  NilData removeBackgroundImage();
 
   @async
   NilData drawGraffiti();
