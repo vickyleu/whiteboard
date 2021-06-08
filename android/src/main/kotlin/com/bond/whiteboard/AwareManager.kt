@@ -249,6 +249,7 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
 
     fun wipeDraw() {
         boardAware?.mBoard?.clear(false)
+        isHaveImageBackground=false
     }
 
     fun setToolColor(value: String) {
@@ -298,7 +299,8 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
 
 
     fun removeImageBackground() {
-        wipeDraw()
+        boardAware?.mBoard?.clear(true)
+        isHaveImageBackground=false
     }
 
 }

@@ -25,10 +25,7 @@ public class AwareManager: NSObject, BoardAwareInterface {
     }
     
 
-    func removeBackgroundImage(){
-        wipeDraw()
-    }
-    
+
     func preJoinClassroom(arg: FLTPreJoinClassRequest, ticCallback: @escaping TICCallback) {
         boardAware?.destroy()
         boardAware = BoardAware()
@@ -139,7 +136,13 @@ public class AwareManager: NSObject, BoardAwareInterface {
         boardAware?.mBoard?.clearDraws()
         isHaveBackgroundImage = false
     }
-    
+
+    func removeBackgroundImage(){
+        boardAware?.mBoard?.clearBackground(true, andSelected: false)
+        isHaveBackgroundImage = false
+    }
+
+
     func setToolColor(color:UIColor){
         switch drawerType {
         case .drawGraffiti:
