@@ -122,6 +122,7 @@ public class AwareManager: NSObject, BoardAwareInterface {
         let arr : Array<NSNumber> = [
             NSNumber(value:TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_LINE.rawValue),
             NSNumber(value:TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_OVAL.rawValue),
+            NSNumber(value:TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_MOUSE.rawValue),
             NSNumber(value:TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_PEN.rawValue),
             NSNumber(value:TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_RECT.rawValue),
             NSNumber(value:TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_TEXT.rawValue),

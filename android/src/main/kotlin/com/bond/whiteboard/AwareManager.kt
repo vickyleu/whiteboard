@@ -232,8 +232,10 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
     fun eraserDrawer() {
         if(drawerType==DrawerType.eraserDrawer)return
         drawerType=DrawerType.eraserDrawer
-        val arr : ArrayList<Int> = arrayListOf<Int>(TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_LINE,
+        val arr : ArrayList<Int> = arrayListOf<Int>(
+            TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_LINE,
             TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_OVAL,
+            TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_MOUSE,
             TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_PEN,
             TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_RECT,
             TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_TEXT)
