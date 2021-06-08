@@ -116,6 +116,7 @@ public class AwareManager: NSObject, BoardAwareInterface {
         guard (drawerType != DrawerType.eraserDrawer) else {
             return
         }
+         drawerType = DrawerType.eraserDrawer
         let arr : Array<NSNumber> = [
             NSNumber(value:TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_LINE.rawValue),
             NSNumber(value:TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_OVAL.rawValue),
