@@ -31,10 +31,10 @@ public class WhiteboardNativeView : NSObject, FlutterPlatformView {
         return rootView
     }
     
-    deinit {
-        for sub in rootView.subviews {
-            sub.removeFromSuperview()
-        }
-    }
+//     deinit {
+//         for sub in rootView.subviews {
+//             sub.removeFromSuperview()
+//         }
+//     }
     
 }
