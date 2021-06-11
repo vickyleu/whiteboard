@@ -30,6 +30,7 @@ public class WhiteboardNativeView : NSObject, FlutterPlatformView {
     func update(frame: CGRect,
                 viewIdentifier viewId: Int64,
                 arguments args: Any?){
+        rootView.removeFromSuperview()
         let dictionary = args as! Dictionary<String, Any>
         let width = (dictionary["width"] as! NSNumber).doubleValue
         let height = (dictionary["height"] as! NSNumber).doubleValue

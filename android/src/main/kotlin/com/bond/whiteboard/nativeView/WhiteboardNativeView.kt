@@ -4,8 +4,8 @@ import android.content.Context
 import android.graphics.Color
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.LinearLayout
 import io.flutter.plugin.platform.PlatformView
 
 class WhiteboardNativeView(val context: Context?, val viewId: Int,val args:Any?) : PlatformView {
@@ -21,7 +21,7 @@ class WhiteboardNativeView(val context: Context?, val viewId: Int,val args:Any?)
         rootView.setBackgroundColor(Color.TRANSPARENT)
         rootView.isFocusable=true
         rootView.isFocusableInTouchMode=true
-
+        rootView.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
     }
     override fun getView(): View {
         Log.e("你他吗的","childCount:${rootView.childCount}")
@@ -34,16 +34,20 @@ class WhiteboardNativeView(val context: Context?, val viewId: Int,val args:Any?)
     }
 
     fun update(viewId: Int, args: Any?) {
-        rootView.id=viewId
-        this.rootView.setPadding(0,0,0,0)
-        val map = args as Map<String,Any>
-        val width=map["width"].toString().toDouble().toInt()
-        val height=map["height"].toString().toDouble().toInt()
-        rootView.minimumHeight=height
-        rootView.minimumWidth=width
-        rootView.isFocusable=true
-        rootView.isFocusableInTouchMode=true
+        (rootView.parent as? ViewGroup)?.removeView(rootView)
+        rootView.id = viewId
+        this.rootView.setPadding(0, 0, 0, 0)
+        val map = args as Map<String, Any>
+        val width = map["width"].toString().toDouble().toInt()
+        val height = map["height"].toString().toDouble().toInt()
+        rootView.minimumHeight = height
+        rootView.minimumWidth = width
+        rootView.isFocusable = true
+        rootView.isFocusableInTouchMode = true
+//        rootView.layoutParams = ViewGroup.LayoutParams(width, height)
+        rootView.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         rootView.requestLayout()
         rootView.postInvalidate()
+
     }
 }
