@@ -289,10 +289,14 @@ public class AwareManager: NSObject, BoardAwareInterface {
     }
     
     func removeBoardView() {
-        guard let boardView = boardAware?.mBoard?.getBoardRenderView() else {
+        guard let board = boardAware?.mBoard else {
+                return
+            }
+        guard let boardView = board.getBoardRenderView() else {
             return
         }
         nativeViewLink?.removeView(boardView)
+        board.unInit()
     }
     
     func setCanUndo(_ canUndo: Bool) {

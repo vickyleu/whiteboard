@@ -152,8 +152,10 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
         nativeViewLink?.addView(boardView,layoutParams)
     }
     override fun removeBoardView() {
-        val boardView= boardAware?.mBoard?.boardRenderView ?:return
+        val board= boardAware?.mBoard  ?:return
+        val boardView= board.boardRenderView ?:return
         nativeViewLink?.removeView(boardView)
+        board.uninit()
     }
     override fun setCanUndo(canUndo: Boolean) {
         settingCallback.setCanUndo(canUndo)

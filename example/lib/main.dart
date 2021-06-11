@@ -9,6 +9,8 @@ import 'package:tencent_im_sdk_plugin/enum/V2TimAdvancedMsgListener.dart';
 import 'package:tencent_im_sdk_plugin/enum/V2TimSDKListener.dart';
 import 'package:tencent_im_sdk_plugin/enum/log_level.dart';
 import 'package:tencent_im_sdk_plugin/manager/v2_tim_manager.dart';
+import 'package:tencent_im_sdk_plugin/models/v2_tim_message.dart';
+import 'package:tencent_im_sdk_plugin/models/v2_tim_value_callback.dart';
 import 'package:tencent_im_sdk_plugin/tencent_im_sdk_plugin.dart';
 import 'package:tencent_trtc_cloud/trtc_cloud.dart';
 import 'package:tencent_trtc_cloud/trtc_cloud_def.dart';
@@ -51,7 +53,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final userId = "1008611";
-  final remoteUserId = "1008612";
+  final remoteUserId = "20210403103215917";
   var initialOptionPosition = 0;
   final userAvailableMap = HashMap<String, Map>();
 
@@ -99,10 +101,10 @@ class _MyAppState extends State<MyApp> {
   initSDK() async {
     WidgetsFlutterBinding.ensureInitialized();
 
-    final secret ="tencent secret key";
-    final appid = 000;///tencent appid
+    final secret ="c063ff07273be5bd38996d09a623c10485c7c009b139f69259e1d204084eb54d";
+    final appid = 1400492258;///tencent appid
 
-    final int classId = 123;
+    final int classId = 456;
     V2TIMManager timManager = TencentImSDKPlugin.v2TIMManager;
     String pwdStr = UserSigGenerate.genTestSig(appid, secret, userId);
     widget._whiteboardController.addPigeonApiListener(
@@ -118,16 +120,7 @@ class _MyAppState extends State<MyApp> {
               .getConversationManager()
               .getConversation(conversationID: "group_$classId");
           String receive = new String.fromCharCodes(arg.data);
-          await TencentImSDKPlugin.v2TIMManager.v2TIMMessageManager
-              .sendCustomMessage(
-            data: receive,
-            receiver: null,
-            groupID: "$classId",
-            extension: "TXWhiteBoardExt",
-            priority: 1,
-            isExcludedFromUnreadCount: true,
-            // offlinePushInfo: OfflinePushInfo()
-          );
+          await _sendCustomMessage(receive, classId,remoteUserId);
           return DataModel()
             ..code = 1
             ..msg = "接收成功了";
@@ -182,6 +175,30 @@ class _MyAppState extends State<MyApp> {
         }));
   }
 
+  Future<V2TimValueCallback<V2TimMessage>> _sendCustomMessage(String receive, int classId, String remoteUserId) {
+    // return TencentImSDKPlugin
+    //     .v2TIMManager
+    //     .getMessageManager()
+    //     .sendCustomMessage(
+    //   data: receive,
+    //   groupID: "$classId",
+    //   priority: 1,
+    //   isExcludedFromUnreadCount: true,
+    //   receiver: "$remoteUserId",
+    // );
+    return TencentImSDKPlugin.v2TIMManager.v2TIMMessageManager
+            .sendCustomMessage(
+          data: receive,
+          // receiver: remoteUserId,
+          receiver: null,
+          groupID: "$classId",
+          extension: "TXWhiteBoardExt",
+          priority: 1,
+          isExcludedFromUnreadCount: true,
+          // offlinePushInfo: OfflinePushInfo()
+        );
+  }
+
   void enterRoom(int appID, String userId, String userSig, int classId) {
     widget.trtcCloud.registerListener(onRtcListener);
     widget.trtcCloud
@@ -223,8 +240,8 @@ class _MyAppState extends State<MyApp> {
             .createGroup(
             groupType:
             // "AVChatRoom"
-            // "Meeting"
-            "Public",
+            "Meeting",
+            // "Public",
             groupName: "interact group",
             groupID: "$groupId")
             .then((value) async {

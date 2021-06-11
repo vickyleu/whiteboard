@@ -19,7 +19,6 @@ class Whiteboard extends StatefulWidget{
   State<StatefulWidget> createState() {
     return _WhiteboardState();
   }
-
 }
 
 class _WhiteboardState extends State<Whiteboard>{
@@ -28,7 +27,6 @@ class _WhiteboardState extends State<Whiteboard>{
   ValueNotifier<bool> scaleGesture=ValueNotifier(false);
   @override
   void initState(){
-    widget.controller._initCallbackHandler();
     super.initState();
   }
 
@@ -88,7 +86,6 @@ class _WhiteboardState extends State<Whiteboard>{
 
   @override
   void dispose() {
-    widget.controller.dispose();
     super.dispose();
   }
 
@@ -273,6 +270,7 @@ class WhiteboardController {//extends Listener
 
   void addPigeonApiListener(PigeonFlutterApi pigeonApiListener){
     _pigeonFlutterApi=pigeonApiListener;
+    _initCallbackHandler();
   }
 
 
@@ -288,6 +286,7 @@ class WhiteboardController {//extends Listener
     return _api.reset();
   }
   Future<void> dispose() async {
+    print("dispose:::${StackTrace.current}");
     if(_isCreated){
       _isCreated=false;
      await _api.quitClass();
@@ -295,6 +294,7 @@ class WhiteboardController {//extends Listener
     _isLogin=false;
     PigeonFlutterApi.setup(null);
     _pigeonFlutterApi=null;
+    reset();
     _isCreated=false;
   }
 
