@@ -1,8 +1,11 @@
 package com.bond.whiteboard
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Build
 import android.util.Log
+import android.view.MotionEvent
+import android.view.View
 import android.widget.FrameLayout
 import androidx.annotation.ColorInt
 import com.bond.whiteboard.board.BoardAware
@@ -145,6 +148,23 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
             try {
                 webView.settings.mixedContentMode=0
             }catch (e:Exception){}
+        }
+        webView.isFocusable=true
+        webView.isFocusableInTouchMode=true
+
+        webView.requestFocus(View.FOCUS_DOWN)
+        webView.setOnTouchListener { v,  event ->
+            when (event.getAction()) {
+                MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP -> if (!v.hasFocus()) {
+                    v.requestFocus()
+                }
+            }
+            false
+        }
+
+        webView.setOnFocusChangeListener { v, hasFocus ->
+            Log.e("setOnFocusChangeLis","${hasFocus}")
+            v.requestFocus()
         }
         webView.setBackgroundColor(Color.TRANSPARENT)
         webView.setPadding(0,0,0,0)

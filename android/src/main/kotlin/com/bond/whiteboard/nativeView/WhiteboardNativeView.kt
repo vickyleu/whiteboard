@@ -13,9 +13,13 @@ class WhiteboardNativeView(val context: Context?, val viewId: Int,val args:Any?)
         rootView.id=viewId
         this.rootView.setPadding(0,0,0,0)
         val map = args as Map<String,Any>
-        val width=map["width"].toString().toDouble()
-        val height=map["height"].toString().toDouble()
+        val width=map["width"].toString().toDouble().toInt()
+        val height=map["height"].toString().toDouble().toInt()
+        rootView.minimumHeight=height
+        rootView.minimumWidth=width
         rootView.setBackgroundColor(Color.TRANSPARENT)
+        rootView.isFocusable=true
+        rootView.isFocusableInTouchMode=true
 
     }
     override fun getView(): View {

@@ -47,49 +47,22 @@ class _WhiteboardState extends State<Whiteboard>{
           creationParams["height"]=height;
           if(Platform.isIOS){
             nativeView= UiKitView(
-              viewType: _uniqueIdentifier,
-              hitTestBehavior: PlatformViewHitTestBehavior.opaque,
-              layoutDirection: TextDirection.ltr,
-              creationParams: creationParams,
-              creationParamsCodec: const StandardMessageCodec(),
-              onPlatformViewCreated: (id){
-                widget.controller.onNativeCreated(id);
-              },
-            );
+                viewType: _uniqueIdentifier,
+                hitTestBehavior: PlatformViewHitTestBehavior.opaque,
+                layoutDirection: TextDirection.ltr,
+                creationParams: creationParams,
+                creationParamsCodec: const StandardMessageCodec(),
+                onPlatformViewCreated: (id){
+                  widget.controller.onNativeCreated(id);
+                },
+              );
           }else if(Platform.isAndroid){
-            // nativeView= PlatformViewLink(
-            //   viewType: _uniqueIdentifier,
-            //   surfaceFactory:(BuildContext context, PlatformViewController controller) {
-            //     return AndroidViewSurface(
-            //       controller: controller,
-            //       gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
-            //       hitTestBehavior: PlatformViewHitTestBehavior.opaque,
-            //     );
-            //   },
-            //   onCreatePlatformView: (PlatformViewCreationParams params) {
-            //     return PlatformViewsService.initSurfaceAndroidView(
-            //       id: params.id,
-            //       viewType: _uniqueIdentifier,
-            //       layoutDirection: TextDirection.ltr,
-            //       creationParams: creationParams,
-            //       creationParamsCodec: StandardMessageCodec(),
-            //     )..addOnPlatformViewCreatedListener((id){
-            //       params.onPlatformViewCreated(id);
-            //       widget.controller.onNativeCreated(id);
-            //     })
-            //       ..create();
-            //   },
-            // );
-            nativeView= AndroidView(
-              viewType: _uniqueIdentifier,
-              layoutDirection: TextDirection.ltr,
-              creationParams: creationParams,
-              hitTestBehavior: PlatformViewHitTestBehavior.opaque,
-              // gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
-              onPlatformViewCreated: (id){
-                widget.controller.onNativeCreated(id);
-              },
-              creationParamsCodec: const StandardMessageCodec(),
+            Widget androidWidget = _androidView(creationParams, width, height);
+            MediaQueryData mediaQueryData =  MediaQuery.of(context);
+            nativeView= OverflowBox(
+              // 使平台视图增大 1 个像素
+              maxWidth : mediaQueryData.size.width +  1 ,
+              child: androidWidget,
             );
           }
           return Container(
@@ -105,6 +78,48 @@ class _WhiteboardState extends State<Whiteboard>{
         },
       );
     }
+  }
+
+  Widget _androidView(Map<String, dynamic> creationParams, double width, double height) {
+     bool useHybridComposition=false;
+    Widget androidWidget;
+    if (useHybridComposition) {
+      androidWidget= PlatformViewLink(
+        viewType: _uniqueIdentifier,
+        surfaceFactory: (context,PlatformViewController controller) {
+          return AndroidViewSurface(
+            controller: controller,
+            gestureRecognizers: Set.from([]),
+            hitTestBehavior: PlatformViewHitTestBehavior.opaque,
+          );
+        },
+        onCreatePlatformView: (PlatformViewCreationParams params) {
+          return PlatformViewsService.initSurfaceAndroidView(
+            id:params.id,
+            viewType: params.viewType,
+            layoutDirection: TextDirection.ltr,
+            creationParams: creationParams,
+            creationParamsCodec: const StandardMessageCodec(),
+            onFocus: (){
+
+            }
+          )  ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
+            ..addOnPlatformViewCreatedListener(widget.controller.onNativeCreated)
+            ..create();
+        },
+      );
+    }else {
+      androidWidget=AndroidView(
+        viewType: _uniqueIdentifier,
+        layoutDirection: TextDirection.ltr,
+        onPlatformViewCreated: widget.controller.onNativeCreated,
+        gestureRecognizers: Set.from([]),
+        hitTestBehavior: PlatformViewHitTestBehavior.opaque,
+        creationParams: creationParams,
+        creationParamsCodec: const StandardMessageCodec(),
+      );
+    }
+    return androidWidget;
   }
 
   @override
@@ -224,6 +239,7 @@ class PigeonFlutterApiImpl extends PigeonFlutterApi {
   }
 
 
+
   @override
   Future<DataModel> receiveData(ReceivedData arg) {
     final model = receiveDataCallback?.call(arg);
@@ -239,7 +255,7 @@ class PigeonFlutterApiImpl extends PigeonFlutterApi {
 
 class WhiteboardController {//extends Listener
   PigeonApi _api =  PigeonApi();
-
+  FocusNode focusNode=FocusNode();
   WhiteboardController();
 
   Set<Function>_createdListener=Set();
