@@ -57,12 +57,35 @@ class _WhiteboardState extends State<Whiteboard>{
               },
             );
           }else if(Platform.isAndroid){
+            // nativeView= PlatformViewLink(
+            //   viewType: _uniqueIdentifier,
+            //   surfaceFactory:(BuildContext context, PlatformViewController controller) {
+            //     return AndroidViewSurface(
+            //       controller: controller,
+            //       gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
+            //       hitTestBehavior: PlatformViewHitTestBehavior.opaque,
+            //     );
+            //   },
+            //   onCreatePlatformView: (PlatformViewCreationParams params) {
+            //     return PlatformViewsService.initSurfaceAndroidView(
+            //       id: params.id,
+            //       viewType: _uniqueIdentifier,
+            //       layoutDirection: TextDirection.ltr,
+            //       creationParams: creationParams,
+            //       creationParamsCodec: StandardMessageCodec(),
+            //     )..addOnPlatformViewCreatedListener((id){
+            //       params.onPlatformViewCreated(id);
+            //       widget.controller.onNativeCreated(id);
+            //     })
+            //       ..create();
+            //   },
+            // );
             nativeView= AndroidView(
               viewType: _uniqueIdentifier,
               layoutDirection: TextDirection.ltr,
               creationParams: creationParams,
               hitTestBehavior: PlatformViewHitTestBehavior.opaque,
-              gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
+              // gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
               onPlatformViewCreated: (id){
                 widget.controller.onNativeCreated(id);
               },
@@ -286,7 +309,6 @@ class WhiteboardController {//extends Listener
     return _api.reset();
   }
   Future<void> dispose() async {
-    print("dispose:::${StackTrace.current}");
     if(_isCreated){
       _isCreated=false;
      await _api.quitClass();
