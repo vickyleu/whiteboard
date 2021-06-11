@@ -23,6 +23,11 @@ public class WhiteboardViewFactory : NSObject, FlutterPlatformViewFactory,Native
                 frame: frame,
                 viewIdentifier: viewId,
                 arguments: args)
+    }else{
+        nativeViewContainer!.update(frame: frame,
+                                    viewIdentifier: viewId,
+                                    arguments: args)
+
     }
         return nativeViewContainer!
     }

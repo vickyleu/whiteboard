@@ -14,6 +14,8 @@ class WhiteboardViewFactory: PlatformViewFactory(io.flutter.plugin.common.Standa
     override fun create(context: Context, viewId: Int, args: Any?): PlatformView {
         if(nativeViewContainer==null){
             nativeViewContainer= WhiteboardNativeView(context, viewId,args)
+        }else{
+            nativeViewContainer?.update(viewId,args)
         }
         return nativeViewContainer!!
     }

@@ -27,6 +27,18 @@ public class WhiteboardNativeView : NSObject, FlutterPlatformView {
         rootView.tag=Int(viewId)
     }
     
+    func update(frame: CGRect,
+                viewIdentifier viewId: Int64,
+                arguments args: Any?){
+        let dictionary = args as! Dictionary<String, Any>
+        let width = (dictionary["width"] as! NSNumber).doubleValue
+        let height = (dictionary["height"] as! NSNumber).doubleValue
+        rootView.frame = CGRect(x:0, y: 0, width:width, height:height)
+        print("frame\(rootView.frame) ")
+        rootView.backgroundColor=UIColor.clear
+        rootView.tag=Int(viewId)
+    }
+    
     public func view() -> UIView {
         return rootView
     }
