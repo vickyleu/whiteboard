@@ -18,10 +18,12 @@ public class WhiteboardViewFactory : NSObject, FlutterPlatformViewFactory,Native
         viewIdentifier viewId: Int64,
         arguments args: Any?
     ) -> FlutterPlatformView {
-        nativeViewContainer =  WhiteboardNativeView(
-            frame: frame,
-            viewIdentifier: viewId,
-            arguments: args)
+    if( nativeViewContainer == nil){
+    nativeViewContainer =  WhiteboardNativeView(
+                frame: frame,
+                viewIdentifier: viewId,
+                arguments: args)
+    }
         return nativeViewContainer!
     }
     
