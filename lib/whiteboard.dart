@@ -13,7 +13,9 @@ import 'package:whiteboard/pigeon/PigeonPlatformMessage.dart';
 
 class Whiteboard extends StatefulWidget{
   final WhiteboardController controller;
-  Whiteboard({@required this.controller}):assert(controller!=null,"哎呀,仆街");
+  Whiteboard({@required this.controller,Key key}) :super(key:key){
+    assert(controller!=null,"哎呀,仆街");
+  }
 
   @override
   State<StatefulWidget> createState() {

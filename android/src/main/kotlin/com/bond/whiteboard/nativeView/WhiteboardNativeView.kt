@@ -41,8 +41,9 @@ class WhiteboardNativeView(val context: Context?, val viewId: Int,val args:Any?)
         val height=map["height"].toString().toDouble().toInt()
         rootView.minimumHeight=height
         rootView.minimumWidth=width
-        rootView.setBackgroundColor(Color.TRANSPARENT)
         rootView.isFocusable=true
         rootView.isFocusableInTouchMode=true
+        rootView.requestLayout()
+        rootView.postInvalidate()
     }
 }

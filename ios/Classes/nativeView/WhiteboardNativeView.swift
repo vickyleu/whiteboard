@@ -37,6 +37,9 @@ public class WhiteboardNativeView : NSObject, FlutterPlatformView {
         print("frame\(rootView.frame) ")
         rootView.backgroundColor=UIColor.clear
         rootView.tag=Int(viewId)
+        rootView.setNeedsLayout()
+        rootView.layoutIfNeeded()
+        rootView.layoutSubviews()
     }
     
     public func view() -> UIView {
