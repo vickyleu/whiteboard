@@ -28,9 +28,9 @@ class WhiteboardNativeView(val context: Context?, val viewId: Int,val args:Any?)
         return  rootView
     }
     override fun dispose() {
-        Log.e("你他吗的","childCount:${rootView.childCount}")
-        rootView.removeAllViews()
-        rootView.clearAnimation()
+//        Log.e("你他吗的","childCount:${rootView.childCount}")
+//        rootView.removeAllViews()
+//        rootView.clearAnimation()
     }
 
     fun update(viewId: Int, args: Any?) {
