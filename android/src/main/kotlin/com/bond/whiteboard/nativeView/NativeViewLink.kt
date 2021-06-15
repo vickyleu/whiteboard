@@ -9,6 +9,6 @@ interface NativeViewLink {
     fun addView(view: View, layoutParams: ViewGroup.LayoutParams)
     fun removeView(view: View)
     fun getApplicationContext():Context?
-    fun managerBoardView(boardView: WebView)
-    fun releaseBoardView(boardView: WebView)
+    fun postViewInitialization(): View.OnFocusChangeListener?
+    fun deallocInputConnection()
 }

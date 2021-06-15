@@ -10,6 +10,7 @@ class BoardAware(private val context:Context) {
 
 
     var mBoard : TEduBoardController? =null
+
     var mBoardCallback: MyBoardCallback? = null
 
     fun destroy() {

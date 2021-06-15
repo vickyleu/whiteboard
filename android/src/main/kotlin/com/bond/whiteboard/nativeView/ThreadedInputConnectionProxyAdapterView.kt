@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 package com.bond.whiteboard.nativeView
 
+import android.graphics.Rect
 import android.os.Handler
 import android.os.IBinder
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
@@ -41,6 +43,7 @@ internal class ThreadedInputConnectionProxyAdapterView(
 
     /** Sets whether or not this should use its previously cached input connection.  */
     fun setLocked(locked: Boolean) {
+        Log.e("setLockedsetLocked:::","setLocked:$locked")
         isLocked = locked
     }
 
@@ -52,11 +55,20 @@ internal class ThreadedInputConnectionProxyAdapterView(
      */
     override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection {
         isTriggerDelayed = false
-        val inputConnection =
-            if (isLocked) cachedConnection else targetView.onCreateInputConnection(outAttrs)
+        val inputConnection = if (isLocked) cachedConnection else targetView.onCreateInputConnection(outAttrs)
         isTriggerDelayed = true
         cachedConnection = inputConnection
+        if (cachedConnection!=null){
+            setLocked(true)
+        }
         return inputConnection!!
+    }
+
+    override fun onCancelPendingInputEvents() {
+        super.onCancelPendingInputEvents()
+    }
+    override fun onFocusChanged(gainFocus: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
+        super.onFocusChanged(gainFocus, direction, previouslyFocusedRect)
     }
 
     override fun checkInputConnectionProxy(view: View): Boolean {
