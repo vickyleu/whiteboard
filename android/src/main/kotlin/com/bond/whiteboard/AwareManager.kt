@@ -312,7 +312,7 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
                 boardAware?.mBoard?.brushThin = size
             }
             DrawerType .drawText->{
-                boardAware?.mBoard?.textSize = size
+                boardAware?.mBoard?.textSize = size*10
             }
             DrawerType .eraserDrawer->{
             }

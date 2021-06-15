@@ -180,7 +180,7 @@ public class AwareManager: NSObject, BoardAwareInterface {
             boardAware?.mBoard?.setBrushThin(UInt32(size))
             break
         case .drawText:
-            boardAware?.mBoard?.setTextSize(UInt32(size))
+            boardAware?.mBoard?.setTextSize(UInt32(size*10))
             break
         case .eraserDrawer:
             break
