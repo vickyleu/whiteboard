@@ -260,6 +260,7 @@ class WhiteboardController {//extends Listener
   FocusNode focusNode=FocusNode();
   WhiteboardController();
 
+  bool _joinComplete=false;
   Set<Function>_createdListener=Set();
   bool _isCreated=false;
   bool _isLogin=false;
@@ -268,6 +269,11 @@ class WhiteboardController {//extends Listener
   Future<void> setBackgroundColor(String color) {
     return _api.setBackgroundColor(StringData()..value = color);
   }
+
+  bool isJoined(){
+    return _joinComplete;
+  }
+
   Future<DataModel> joinClass(int classId) {
     return _api.joinClass(JoinClassRequest()
       ..roomId=classId
@@ -275,6 +281,7 @@ class WhiteboardController {//extends Listener
       if(value.code==-1){
         print("joinClass # ${value.msg}");
       }else{
+        _joinComplete=true;
         print("joinClass # 进入教室成功");
       }
       return value;
@@ -334,7 +341,9 @@ class WhiteboardController {//extends Listener
     _isLogin=false;
     PigeonFlutterApi.setup(null);
     _pigeonFlutterApi=null;
-    reset();
+    reset().then((value){
+      _joinComplete=false;
+    });
     _isCreated=false;
   }
 
