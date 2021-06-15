@@ -169,12 +169,15 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
         webView.setBackgroundColor(Color.TRANSPARENT)
         webView.setPadding(0,0,0,0)
         val layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
+
+        nativeViewLink?.managerBoardView(boardView)
         nativeViewLink?.addView(boardView,layoutParams)
     }
     override fun removeBoardView() {
         val board= boardAware?.mBoard  ?:return
-        val boardView= board.boardRenderView ?:return
+        val boardView= board.boardRenderView as? WebView ?:return
         nativeViewLink?.removeView(boardView)
+        nativeViewLink?.releaseBoardView(boardView)
         board.uninit()
     }
     override fun setCanUndo(canUndo: Boolean) {
