@@ -53,7 +53,7 @@ internal class ThreadedInputConnectionProxyAdapterView(
      *
      * Delegates to ThreadedInputConnectionProxyView to get WebView's input connection.
      */
-    override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection {
+    override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection? {
         isTriggerDelayed = false
         val inputConnection = if (isLocked) cachedConnection else targetView.onCreateInputConnection(outAttrs)
         isTriggerDelayed = true
@@ -61,7 +61,7 @@ internal class ThreadedInputConnectionProxyAdapterView(
         if (cachedConnection!=null){
             setLocked(true)
         }
-        return inputConnection!!
+        return inputConnection
     }
 
     override fun onCancelPendingInputEvents() {
