@@ -29,11 +29,11 @@ import android.view.inputmethod.InputConnection
 internal class ThreadedInputConnectionProxyAdapterView(
     val containerView: View,
     val targetView: View,
-    val imeHandler: Handler
+    val imeHandler: Handler?
 ) : View(
     containerView.context
 ) {
-    val _windowToken: IBinder
+    val _windowToken: IBinder?
     val _rootView: View
     /** Returns whether or not this is currently asynchronously acquiring an input connection.  */
     var isTriggerDelayed = true
@@ -93,11 +93,11 @@ internal class ThreadedInputConnectionProxyAdapterView(
         return true
     }
 
-    override fun getWindowToken(): IBinder {
+    override fun getWindowToken(): IBinder? {
         return _windowToken
     }
 
-    override fun getHandler(): Handler {
+    override fun getHandler(): Handler? {
         return imeHandler
     }
 
