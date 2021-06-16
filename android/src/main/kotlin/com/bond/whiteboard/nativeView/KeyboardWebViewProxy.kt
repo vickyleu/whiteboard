@@ -2,14 +2,12 @@ package com.bond.whiteboard.nativeView
 
 import android.content.Context
 import android.content.Context.INPUT_METHOD_SERVICE
-import android.graphics.Rect
 import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnFocusChangeListener
-import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
@@ -36,7 +34,7 @@ class KeyboardWebViewProxy : FrameLayout {
 
 
     val focusChangeListener = OnFocusChangeListener { v,  hasFocus ->
-        if(v is WebView){//&&hasFocus
+        if(v is WebView&&hasFocus){
             for (i in 0 until v.childCount){
                 val vv=v.getChildAt(i)
                 Log.e(TAG,"OnFocusChangeListener ${vv.javaClass.simpleName}  ${hasFocus}")
@@ -132,6 +130,7 @@ class KeyboardWebViewProxy : FrameLayout {
         // ThreadedInputConnectionProxyView. We are making the assumption that the only view that could
         // possibly be interacting with the IMM here is WebView's ThreadedInputConnectionProxyView.
         if(view.handler==null) return super.checkInputConnectionProxy(view)
+        Log.e("viewviewview","${view.javaClass.simpleName}")
         proxyAdapterView = ThreadedInputConnectionProxyAdapterView( /*containerView=*/
             containerView!!,  /*targetView=*/
             view,  /*imeHandler=*/
@@ -221,7 +220,7 @@ class KeyboardWebViewProxy : FrameLayout {
                 proxyAdapterView?.onWindowFocusChanged(true)
                 imm.isActive(containerView)
             }
-            lockInputConnection()
+//            lockInputConnection()
         }else{
             if (containerView == null) {
                 Log.e(
@@ -241,15 +240,12 @@ class KeyboardWebViewProxy : FrameLayout {
         }
     }
 
-    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
-        Log.e("dispatchTouchEvent","onTouchEvent")
-        return super.dispatchTouchEvent(ev)
-    }
-
     fun onActiveFocus() {
-//        containerView?.requestFocus()
-//        containerView?.isFocusable=true
-//        containerView?.requestFocusFromTouch()
-//        proxyAdapterView?.requestFocus()
+        val rootview = this.rootView
+        val view = rootview.findFocus()
+        if(view!=null&&view is WebView){
+            view.onFocusChangeListener?.onFocusChange(view,true)
+            view.view.requestFocus()
+        }
     }
 }
