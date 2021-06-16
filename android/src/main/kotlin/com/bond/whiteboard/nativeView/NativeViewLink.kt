@@ -11,4 +11,6 @@ interface NativeViewLink {
     fun getApplicationContext():Context?
     fun postViewInitialization(): View.OnFocusChangeListener?
     fun deallocInputConnection()
+    fun onTextFocusChange(focus: Boolean)
+    fun onActiveFocus()
 }

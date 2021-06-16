@@ -40,5 +40,11 @@ class WhiteboardViewFactory :
         nativeViewContainer?.dealloc()
     }
 
+    override fun onTextFocusChange(focus: Boolean) {
+        nativeViewContainer?.rootView?.onTextFocusChange(focus)
+    }
 
+    override fun onActiveFocus() {
+        nativeViewContainer?.rootView?.onActiveFocus()
+    }
 }

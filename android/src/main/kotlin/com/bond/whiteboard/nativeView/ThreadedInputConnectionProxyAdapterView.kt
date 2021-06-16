@@ -43,7 +43,6 @@ internal class ThreadedInputConnectionProxyAdapterView(
 
     /** Sets whether or not this should use its previously cached input connection.  */
     fun setLocked(locked: Boolean) {
-        Log.e("setLockedsetLocked:::","setLocked:$locked")
         isLocked = locked
     }
 
@@ -54,21 +53,12 @@ internal class ThreadedInputConnectionProxyAdapterView(
      * Delegates to ThreadedInputConnectionProxyView to get WebView's input connection.
      */
     override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection? {
+        Log.e("onCreateInputConnection","$targetView  $isLocked")
         isTriggerDelayed = false
         val inputConnection = if (isLocked) cachedConnection else targetView.onCreateInputConnection(outAttrs)
         isTriggerDelayed = true
         cachedConnection = inputConnection
-        if (cachedConnection!=null){
-            setLocked(true)
-        }
         return inputConnection
-    }
-
-    override fun onCancelPendingInputEvents() {
-        super.onCancelPendingInputEvents()
-    }
-    override fun onFocusChanged(gainFocus: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
-        super.onFocusChanged(gainFocus, direction, previouslyFocusedRect)
     }
 
     override fun checkInputConnectionProxy(view: View): Boolean {

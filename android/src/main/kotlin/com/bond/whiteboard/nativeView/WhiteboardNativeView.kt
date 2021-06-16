@@ -71,7 +71,7 @@ class WhiteboardNativeView(val context: Context, val viewId: Int, val args: Any?
     }
 
     fun dealloc() {
-
+        rootView.clearFocus()
     }
 
 

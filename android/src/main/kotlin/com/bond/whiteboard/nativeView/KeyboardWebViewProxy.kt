@@ -2,9 +2,11 @@ package com.bond.whiteboard.nativeView
 
 import android.content.Context
 import android.content.Context.INPUT_METHOD_SERVICE
+import android.graphics.Rect
 import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnFocusChangeListener
 import android.view.ViewGroup
@@ -34,10 +36,10 @@ class KeyboardWebViewProxy : FrameLayout {
 
 
     val focusChangeListener = OnFocusChangeListener { v,  hasFocus ->
-        if(v is WebView){
-            Log.e(TAG,"OnFocusChangeListener $hasFocus  ")
+        if(v is WebView){//&&hasFocus
             for (i in 0 until v.childCount){
                 val vv=v.getChildAt(i)
+                Log.e(TAG,"OnFocusChangeListener ${vv.javaClass.simpleName}  ${hasFocus}")
                 if(vv.javaClass.simpleName.contains("InnerWebView")){
                     checkInputConnectionProxy(vv)
                     return@OnFocusChangeListener
@@ -89,7 +91,7 @@ class KeyboardWebViewProxy : FrameLayout {
 
     /** Restore the original InputConnection, if needed.  */
     fun dispose() {
-        resetInputConnection()
+//        resetInputConnection()
     }
 
     /**
@@ -115,10 +117,10 @@ class KeyboardWebViewProxy : FrameLayout {
         // Check to see if the view param is WebView's ThreadedInputConnectionProxyView.
         val previousProxy = threadedInputConnectionProxyView
         threadedInputConnectionProxyView = view
-        if (previousProxy === view) {
-            // This isn't a new ThreadedInputConnectionProxyView. Ignore it.
-            return super.checkInputConnectionProxy(view)
-        }
+//        if (previousProxy === view) {
+//            // This isn't a new ThreadedInputConnectionProxyView. Ignore it.
+//            return super.checkInputConnectionProxy(view)
+//        }
         if (containerView == null) {
             Log.e(
                 TAG,
@@ -129,6 +131,7 @@ class KeyboardWebViewProxy : FrameLayout {
         // We've never seen this before, so we make the assumption that this is WebView's
         // ThreadedInputConnectionProxyView. We are making the assumption that the only view that could
         // possibly be interacting with the IMM here is WebView's ThreadedInputConnectionProxyView.
+        if(view.handler==null) return super.checkInputConnectionProxy(view)
         proxyAdapterView = ThreadedInputConnectionProxyAdapterView( /*containerView=*/
             containerView!!,  /*targetView=*/
             view,  /*imeHandler=*/
@@ -198,6 +201,55 @@ class KeyboardWebViewProxy : FrameLayout {
                 context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             targetView?.onWindowFocusChanged(true)
             imm.isActive(containerView)
+            Log.e("激活","$containerView")
         }
+    }
+
+    fun onTextFocusChange(focus: Boolean) {
+        if(focus){
+            if (containerView == null) {
+                Log.e(
+                    TAG,
+                    "Can't set the input connection target because there is no containerView to use as a handler."
+                )
+                return
+            }
+            proxyAdapterView?.requestFocus()
+            containerView?.post {
+                val imm: InputMethodManager =
+                    context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                proxyAdapterView?.onWindowFocusChanged(true)
+                imm.isActive(containerView)
+            }
+            lockInputConnection()
+        }else{
+            if (containerView == null) {
+                Log.e(
+                    TAG,
+                    "Can't set the input connection target because there is no containerView to use as a handler."
+                )
+                return
+            }
+            proxyAdapterView?.clearFocus()
+            containerView?.post {
+                val imm: InputMethodManager =
+                    context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                proxyAdapterView?.onWindowFocusChanged(false)
+                imm.hideSoftInputFromWindow(proxyAdapterView?.windowToken, 0);
+            }
+            unlockInputConnection()
+        }
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        Log.e("dispatchTouchEvent","onTouchEvent")
+        return super.dispatchTouchEvent(ev)
+    }
+
+    fun onActiveFocus() {
+//        containerView?.requestFocus()
+//        containerView?.isFocusable=true
+//        containerView?.requestFocusFromTouch()
+//        proxyAdapterView?.requestFocus()
     }
 }

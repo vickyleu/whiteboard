@@ -77,21 +77,18 @@ internal class DisplayListenerProxy {
             displayManager.registerDisplayListener(
                 object : DisplayManager.DisplayListener {
                     override fun onDisplayAdded(displayId: Int) {
-                        Log.e(TAG, "onDisplayAdded")
                         for (webViewListener in webViewListeners) {
                             webViewListener.onDisplayAdded(displayId)
                         }
                     }
 
                     override fun onDisplayRemoved(displayId: Int) {
-                        Log.e(TAG, "onDisplayRemoved")
                         for (webViewListener in webViewListeners) {
                             webViewListener.onDisplayRemoved(displayId)
                         }
                     }
 
                     override fun onDisplayChanged(displayId: Int) {
-                        Log.e(TAG, "onDisplayChanged")
                         if (displayManager.getDisplay(displayId) == null) {
                             return
                         }

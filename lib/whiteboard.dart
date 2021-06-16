@@ -250,14 +250,13 @@ class PigeonFlutterApiImpl extends PigeonFlutterApi {
 
   @override
   NilData historySyncCompleted() {
-   return this.syncCompletedCallback?.call();
+   return this.syncCompletedCallback?.call()??NilData();
   }
 }
 
 
 class WhiteboardController {//extends Listener
   PigeonApi _api =  PigeonApi();
-  FocusNode focusNode=FocusNode();
   WhiteboardController();
 
   bool _joinComplete=false;

@@ -1,19 +1,12 @@
 package com.bond.whiteboard
 
-import android.annotation.SuppressLint
-import android.content.Context
 import android.graphics.Color
-import android.hardware.display.DisplayManager
 import android.os.Build
-import android.os.Handler
 import android.util.Log
-import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
 import androidx.annotation.ColorInt
 import com.bond.whiteboard.board.BoardAware
-import com.bond.whiteboard.nativeView.DisplayListenerProxy
-import com.bond.whiteboard.nativeView.KeyboardWebViewProxy
 import com.bond.whiteboard.nativeView.NativeViewLink
 import com.bond.whiteboard.teb.BoardAwareInterface
 import com.bond.whiteboard.teb.MyBoardCallback
@@ -30,13 +23,14 @@ import com.tencent.tic.core.TICManager.TICIMStatusListener
 
 
 class AwareManager : TICIMStatusListener, BoardAwareInterface {
-    var nativeViewLink: NativeViewLink?=null
-    var flutterApi: PigeonPlatformMessage.PigeonFlutterApi?=null
+    var nativeViewLink: NativeViewLink? = null
+    var flutterApi: PigeonPlatformMessage.PigeonFlutterApi? = null
     var drawerType = DrawerType.drawGraffiti
     var isHaveImageBackground = false
     private val settingCallback = MySettingCallback().also {
-        it.awareManager=this
+        it.awareManager = this
     }
+
     /**
      * 课堂资源互动管理
      */
@@ -50,34 +44,35 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
         ticCallback: TICCallback<Any>
     ) {
         val context = nativeViewLink?.getApplicationContext()
-        if(context==null){
-            val msg="预创建房间失败,上下文为空"
+        if (context == null) {
+            val msg = "预创建房间失败,上下文为空"
             print(msg)
-            ticCallback.onError(MODULE_IMSDK,-1,msg)
+            ticCallback.onError(MODULE_IMSDK, -1, msg)
             return
         }
         boardAware?.destroy()
-        boardAware=BoardAware(context)
+        boardAware = BoardAware(context)
         try {
-            mTicManager.init(context,arg.appId.toInt(), arg.userId, arg.userSig)
-        }catch (e:Exception){
-            Log.e("mother fucker","why you are crash anytime")
+            mTicManager.init(context, arg.appId.toInt(), arg.userId, arg.userSig)
+        } catch (e: Exception) {
+            Log.e("mother fucker", "why you are crash anytime")
         }
         //2.白板
         val board = mTicManager.boardController
-        if(board==null){
-            val msg="预创建房间失败,白板未初始化"
+        if (board == null) {
+            val msg = "预创建房间失败,白板未初始化"
             print(msg)
-            ticCallback.onError(MODULE_IMSDK,-1,msg)
+            ticCallback.onError(MODULE_IMSDK, -1, msg)
             return
         }
-        board.globalBackgroundColor= TEduBoardController.TEduBoardColor(Color.TRANSPARENT)
+        board.globalBackgroundColor = TEduBoardController.TEduBoardColor(Color.TRANSPARENT)
         boardAware?.mBoard = board
         //1、设置白板的回调
         boardAware?.mBoardCallback = MyBoardCallback(this)
         print("预创建参数初始化成功")
         ticCallback.onSuccess(1)
     }
+
     fun joinClassroom(
         classroomOption: TICClassroomOption,
         ticCallback: TICCallback<Any>
@@ -91,28 +86,31 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
     fun reset() {
         boardAware?.reset()
         drawerType = DrawerType.drawGraffiti
-        isHaveImageBackground=false
+        isHaveImageBackground = false
     }
-    fun setBackgroundColor(@ColorInt color:Int) {
+
+    fun setBackgroundColor(@ColorInt color: Int) {
         boardAware?.setBackgroundColor(color)
     }
+
     fun quitClassroom() {
         boardAware?.destroy()
-        isHaveImageBackground=false
-        mTicManager.quitClassroom(true,object :TICCallback<Any>{
+        isHaveImageBackground = false
+        mTicManager.quitClassroom(true, object : TICCallback<Any> {
             override fun onSuccess(data: Any) {
                 removeBoardView()
             }
+
             override fun onError(module: String, errCode: Int, errMsg: String) {
-                Log.e("mother fucker","退出白板失败:$errCode  $errMsg")
+                Log.e("mother fucker", "退出白板失败:$errCode  $errMsg")
                 removeBoardView()
             }
         })
 //        rtcAware?.destroy()
         flutterApi?.exitRoom(PigeonPlatformMessage.DataModel().apply {
-            this.code=1
-            this.msg="退出成功"
-            this.data=null
+            this.code = 1
+            this.msg = "退出成功"
+            this.data = null
         }) {
 
         }
@@ -123,7 +121,7 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
         try {
             boardAware?.mBoard?.addSyncData(String(data))
             callback.onSuccess(1)
-        }catch (e:Exception){
+        } catch (e: Exception) {
             callback.onError(TICManager.MODULE_IMSDK, -1, "addSyncData failed: ${e.message}")
         }
 
@@ -136,8 +134,9 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
     override fun onTICUserSigExpired() {
         //
     }
+
     override fun onTEBHistroyDataSyncCompleted() {
-        flutterApi?.historySyncCompleted(null)
+        flutterApi?.historySyncCompleted {  }
         val board = boardAware?.mBoard ?: return
         val currentBoard: String = board.currentBoard;
         val currentFile = board.currentFile
@@ -145,69 +144,84 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
     }
 
     override fun addBoardView() {
-        val board= boardAware?.mBoard ?:return
-        board.backgroundColor= TEduBoardController.TEduBoardColor(Color.TRANSPARENT)
-        val boardView= board.boardRenderView ?:return
+        val board = boardAware?.mBoard ?: return
+        board.backgroundColor = TEduBoardController.TEduBoardColor(Color.TRANSPARENT)
+        val boardView = board.boardRenderView ?: return
         val webView = boardView as WebView
-        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             try {
-                webView.settings.mixedContentMode=0
-            }catch (e:Exception){}
+                webView.settings.mixedContentMode = 0
+            } catch (e: Exception) {
+            }
         }
-        webView.isFocusable=true
-        webView.isFocusableInTouchMode=true
+        webView.isFocusable = true
+        webView.isFocusableInTouchMode = true
         webView.requestFocus(View.FOCUS_DOWN)
         webView.setBackgroundColor(Color.TRANSPARENT)
-        webView.setPadding(0,0,0,0)
-        val layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
-        nativeViewLink?.addView(webView,layoutParams)
+        webView.setPadding(0, 0, 0, 0)
+        val layoutParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT
+        )
         webView.onFocusChangeListener = nativeViewLink?.postViewInitialization()
-
+        nativeViewLink?.addView(webView, layoutParams)
     }
+
     override fun removeBoardView() {
-        val board= boardAware?.mBoard  ?:return
-        val boardView= board.boardRenderView as? WebView ?:return
+        val board = boardAware?.mBoard ?: return
+        val boardView = board.boardRenderView as? WebView ?: return
+        nativeViewLink?.onTextFocusChange(false)
         nativeViewLink?.deallocInputConnection()
         nativeViewLink?.removeView(boardView)
         board.uninit()
     }
+
     override fun setCanUndo(canUndo: Boolean) {
         settingCallback.setCanUndo(canUndo)
     }
+
     override fun setCanRedo(canredo: Boolean) {
         settingCallback.setCanRedo(canredo)
     }
+
     override fun addFile(fileId: String?): TEduBoardFileInfo? {
         return null
     }
 
 
     fun addBackgroundImage(url: String) {
-        boardAware?.mBoard?.setBackgroundImage(url, TEduBoardController.TEduBoardImageFitMode.TEDU_BOARD_IMAGE_FIT_MODE_CENTER)
-        isHaveImageBackground=true
+        boardAware?.mBoard?.setBackgroundImage(
+            url,
+            TEduBoardController.TEduBoardImageFitMode.TEDU_BOARD_IMAGE_FIT_MODE_CENTER
+        )
+        isHaveImageBackground = true
     }
 
 
     override fun onTextComponentStatusChange(id: String?, status: String?) {
-        //
+        Log.e("呢不能行啊","status:$status")
+//        val board = boardAware?.mBoard ?: return
+//        val webView = board.boardRenderView as? WebView ?: return
+        nativeViewLink?.onTextFocusChange(status=="focus")
     }
 
 
     override fun sendMessage(data: ByteArray, extension: String) {
         flutterApi?.receiveData(PigeonPlatformMessage.ReceivedData().also {
-            it.data=data
-            it.extension=extension
-        }){it->
-            if(it.code.toInt()==-1){
+            it.data = data
+            it.extension = extension
+        }) { it ->
+            if (it.code.toInt() == -1) {
                 print("同步失败了:${it.msg}")
-            }else{
-                val wtf : TEduBoardController = boardAware?.mBoard?:return@receiveData
+            } else {
+                val wtf: TEduBoardController = boardAware?.mBoard ?: return@receiveData
 //                wtf.addAckData(data) //// 🙄🙄🙄🙄🙄🙄🙄❓❓❓❓❓❓❓❓❓❓🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃
             }
         }
     }
+
     override fun onTEBSyncData(data: String) {
-        sendMessage(data.toByteArray(),extension = TICSDK_WHITEBOARD_CMD)
+        sendMessage(data.toByteArray(), extension = TICSDK_WHITEBOARD_CMD)
     }
 
     fun receiveIds(id: String, type: Int) {
@@ -215,47 +229,63 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
     }
 
     fun drawGraffiti() {
-        if(drawerType==DrawerType.drawGraffiti)return
-        drawerType=DrawerType.drawGraffiti
-        boardAware?.mBoard?.toolType = TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_PEN
+        if (drawerType == DrawerType.drawGraffiti) return
+        nativeViewLink?.onTextFocusChange(false)
+        drawerType = DrawerType.drawGraffiti
+        boardAware?.mBoard?.toolType =
+            TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_PEN
     }
 
     fun drawLine() {
-        if(drawerType==DrawerType.drawLine)return
-        drawerType=DrawerType.drawLine
-        boardAware?.mBoard?.toolType = TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_LINE
+        if (drawerType == DrawerType.drawLine) return
+        nativeViewLink?.onTextFocusChange(false)
+        drawerType = DrawerType.drawLine
+        boardAware?.mBoard?.toolType =
+            TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_LINE
     }
 
     fun drawSquare() {
-        if(drawerType==DrawerType.drawSquare)return
-        drawerType=DrawerType.drawSquare
-        boardAware?.mBoard?.toolType = TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_RECT
+        if (drawerType == DrawerType.drawSquare) return
+        nativeViewLink?.onTextFocusChange(false)
+        drawerType = DrawerType.drawSquare
+        boardAware?.mBoard?.toolType =
+            TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_RECT
     }
 
     fun drawCircular() {
-        if(drawerType==DrawerType.drawCircular)return
-        drawerType=DrawerType.drawCircular
-        boardAware?.mBoard?.toolType = TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_OVAL
+        if (drawerType == DrawerType.drawCircular) return
+        nativeViewLink?.onTextFocusChange(false)
+        drawerType = DrawerType.drawCircular
+        boardAware?.mBoard?.toolType =
+            TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_OVAL
     }
 
     fun drawText() {
-        if(drawerType==DrawerType.drawText)return
-        drawerType=DrawerType.drawText
-        boardAware?.mBoard?.textStyle = TEduBoardController.TEduBoardTextStyle.TEDU_BOARD_TEXT_STYLE_NORMAL
-        boardAware?.mBoard?.toolType = TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_TEXT
+        if (drawerType == DrawerType.drawText) return
+        drawerType = DrawerType.drawText
+        boardAware?.mBoard?.textStyle =
+            TEduBoardController.TEduBoardTextStyle.TEDU_BOARD_TEXT_STYLE_NORMAL
+        boardAware?.mBoard?.toolType =
+            TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_TEXT
+        val board = boardAware?.mBoard ?: return
+        board.backgroundColor = TEduBoardController.TEduBoardColor(Color.TRANSPARENT)
+        nativeViewLink?.onActiveFocus()
     }
 
     fun eraserDrawer() {
-        if(drawerType==DrawerType.eraserDrawer)return
-        drawerType=DrawerType.eraserDrawer
-        val arr : ArrayList<Int> = arrayListOf<Int>(
+        if (drawerType == DrawerType.eraserDrawer) return
+        nativeViewLink?.onTextFocusChange(false)
+        drawerType = DrawerType.eraserDrawer
+        val arr: ArrayList<Int> = arrayListOf<Int>(
             TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_LINE,
             TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_OVAL,
             TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_MOUSE,
             TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_PEN,
             TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_RECT,
-            TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_TEXT)
-        boardAware?.mBoard?.toolType = TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_ERASER
+            TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_TEXT
+        )
+        boardAware?.mBoard?.toolType =
+            TEduBoardController.TEduBoardToolType.TEDU_BOARD_TOOL_TYPE_ERASER
         boardAware?.mBoard?.setEraseLayerType(arr)
     }
 
@@ -264,64 +294,66 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
     }
 
     fun wipeDraw() {
+        nativeViewLink?.onTextFocusChange(false)
         boardAware?.mBoard?.clear(false)
-        isHaveImageBackground=false
+        isHaveImageBackground = false
     }
 
     fun setToolColor(value: String) {
-        val color=TEduBoardController.TEduBoardColor(value)
-        when(drawerType) {
-            DrawerType.drawGraffiti->{
-                boardAware?.mBoard?.brushColor=color
+        val color = TEduBoardController.TEduBoardColor(value)
+        when (drawerType) {
+            DrawerType.drawGraffiti -> {
+                boardAware?.mBoard?.brushColor = color
             }
-            DrawerType.drawLine->{
-                boardAware?.mBoard?.brushColor=color
+            DrawerType.drawLine -> {
+                boardAware?.mBoard?.brushColor = color
             }
-            DrawerType .drawSquare->{
-                boardAware?.mBoard?.brushColor=color
+            DrawerType.drawSquare -> {
+                boardAware?.mBoard?.brushColor = color
             }
-            DrawerType .drawCircular->{
-                boardAware?.mBoard?.brushColor=color
+            DrawerType.drawCircular -> {
+                boardAware?.mBoard?.brushColor = color
             }
-            DrawerType .drawText->{
-                boardAware?.mBoard?.textColor=color
+            DrawerType.drawText -> {
+                boardAware?.mBoard?.textColor = color
             }
-            DrawerType .eraserDrawer->{
+            DrawerType.eraserDrawer -> {
             }
         }
     }
 
     fun setToolSize(size: Int) {
-        when(drawerType) {
-            DrawerType.drawGraffiti->{
+        when (drawerType) {
+            DrawerType.drawGraffiti -> {
                 boardAware?.mBoard?.brushThin = size
             }
-            DrawerType .drawLine->{
+            DrawerType.drawLine -> {
                 boardAware?.mBoard?.brushThin = size
             }
-            DrawerType .drawSquare->{
+            DrawerType.drawSquare -> {
                 boardAware?.mBoard?.brushThin = size
             }
-            DrawerType .drawCircular->{
+            DrawerType.drawCircular -> {
                 boardAware?.mBoard?.brushThin = size
             }
-            DrawerType .drawText->{
-                boardAware?.mBoard?.textSize = size*10
+            DrawerType.drawText -> {
+                boardAware?.mBoard?.textSize = size * 10
             }
-            DrawerType .eraserDrawer->{
+            DrawerType.eraserDrawer -> {
             }
         }
     }
 
 
     fun removeImageBackground() {
+        nativeViewLink?.onTextFocusChange(false)
         boardAware?.mBoard?.clear(true)
-        isHaveImageBackground=false
+        isHaveImageBackground = false
     }
 
 }
 
-enum class DrawerType{
+enum class DrawerType {
     drawGraffiti,
     drawLine,
     drawSquare,
