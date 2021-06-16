@@ -126,7 +126,6 @@ class KeyboardWebViewProxy : FrameLayout {
             )
             return super.checkInputConnectionProxy(view)
         }
-        if(view.handler==null)return super.checkInputConnectionProxy(view)
         // We've never seen this before, so we make the assumption that this is WebView's
         // ThreadedInputConnectionProxyView. We are making the assumption that the only view that could
         // possibly be interacting with the IMM here is WebView's ThreadedInputConnectionProxyView.
