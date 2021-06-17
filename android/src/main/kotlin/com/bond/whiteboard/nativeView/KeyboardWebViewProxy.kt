@@ -3,13 +3,17 @@ package com.bond.whiteboard.nativeView
 import android.content.Context
 import android.content.Context.INPUT_METHOD_SERVICE
 import android.content.res.Configuration
+import android.graphics.Rect
 import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
 import android.view.View.OnFocusChangeListener
+import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
+import android.widget.ListPopupWindow
 import androidx.annotation.RequiresApi
 import com.tencent.smtt.sdk.WebView
 
@@ -38,9 +42,14 @@ class KeyboardWebViewProxy : FrameLayout {
         if(v is WebView){
             for (i in 0 until v.childCount){
                 val vv=v.getChildAt(i)
-                Log.e(TAG,"OnFocusChangeListener ${vv.javaClass.simpleName}  ${hasFocus}")
-                if(vv.javaClass.simpleName.contains("InnerWebView")){
-                    checkInputConnectionProxy(vv)
+                if(vv.javaClass.simpleName.contains("InnerWebView")||vv.javaClass.superclass.simpleName=="WebView"){
+                    if (vv.onCreateInputConnection(EditorInfo().also {
+                        it.imeOptions=EditorInfo.IME_ACTION_NEXT
+                        })!=null){
+                        Log.e(TAG,"OnFocusChangeListener ${vv.javaClass.simpleName} ${vv.javaClass.superclass.canonicalName} ${hasFocus}")
+                        vv.requestFocus()
+                        checkInputConnectionProxy(vv)
+                    }
                     return@OnFocusChangeListener
                 }
             }
@@ -133,10 +142,10 @@ class KeyboardWebViewProxy : FrameLayout {
         // Check to see if the view param is WebView's ThreadedInputConnectionProxyView.
         val previousProxy = threadedInputConnectionProxyView
         threadedInputConnectionProxyView = view
-//        if (previousProxy === view) {
-//            // This isn't a new ThreadedInputConnectionProxyView. Ignore it.
-//            return super.checkInputConnectionProxy(view)
-//        }
+        if (previousProxy === view) {
+            // This isn't a new ThreadedInputConnectionProxyView. Ignore it.
+            return super.checkInputConnectionProxy(view)
+        }
         if (containerView == null) {
             Log.e(
                 TAG,
@@ -217,8 +226,15 @@ class KeyboardWebViewProxy : FrameLayout {
             val imm: InputMethodManager =
                 context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             targetView?.onWindowFocusChanged(true)
-            imm.isActive(containerView)
-            Log.e("激活","$containerView")
+            try {
+                val value=imm.isActive(containerView)
+                if(!value){
+                    imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
+                }
+                Log.e("激活","$containerView")
+            }catch (e:Exception){
+                Log.e("Exception","${e.message}")
+            }
         }
     }
 
@@ -243,7 +259,16 @@ class KeyboardWebViewProxy : FrameLayout {
             val imm: InputMethodManager =
                 context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             proxyAdapterView?.onWindowFocusChanged(true)
-            imm.isActive(containerView)
+            try {
+                val value=imm.isActive(containerView)
+                if(!value){
+                    imm.toggleSoftInputFromWindow(containerView?.windowToken,InputMethodManager.SHOW_IMPLICIT, InputMethodManager.HIDE_IMPLICIT_ONLY);
+//                    imm.toggleSoftInputFromWindow(proxyAdapterView?.windowToken,InputMethodManager.SHOW_IMPLICIT, InputMethodManager.HIDE_IMPLICIT_ONLY);
+//                    imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
+                }
+            }catch (e:Exception){
+                Log.e("Exception","${e.message}")
+            }
         }
         //            lockInputConnection()
     }
@@ -274,5 +299,45 @@ class KeyboardWebViewProxy : FrameLayout {
             view.onFocusChangeListener?.onFocusChange(view,true)
             view.view.requestFocus()
         }
+    }
+
+
+    override fun onFocusChanged(focused: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
+        // This works around a crash when old (<67.0.3367.0) Chromium versions are used.
+
+        // Prior to Chromium 67.0.3367 the following sequence happens when a select drop down is shown
+        // on tablets:
+        //
+        //  - WebView is calling ListPopupWindow#show
+        //  - buildDropDown is invoked, which sets mDropDownList to a DropDownListView.
+        //  - showAsDropDown is invoked - resulting in mDropDownList being added to the window and is
+        //    also synchronously performing the following sequence:
+        //    - WebView's focus change listener is loosing focus (as mDropDownList got it)
+        //    - WebView is hiding all popups (as it lost focus)
+        //    - WebView's SelectPopupDropDown#hide is invoked.
+        //    - DropDownPopupWindow#dismiss is invoked setting mDropDownList to null.
+        //  - mDropDownList#setSelection is invoked and is throwing a NullPointerException (as we just set mDropDownList to null).
+        //
+        // To workaround this, we drop the problematic focus lost call.
+        // See more details on: https://github.com/flutter/flutter/issues/54164
+        //
+        // We don't do this after Android P as it shipped with a new enough WebView version, and it's
+        // better to not do this on all future Android versions in case DropDownListView's code changes.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P && isCalledFromListPopupWindowShow()
+            && !focused
+        ) {
+            return
+        }
+        super.onFocusChanged(focused, direction, previouslyFocusedRect)
+    }
+
+    private fun isCalledFromListPopupWindowShow(): Boolean {
+        val stackTraceElements = Thread.currentThread().stackTrace
+        for (stackTraceElement in stackTraceElements) {
+            if (stackTraceElement.className == ListPopupWindow::class.java.getCanonicalName() && stackTraceElement.methodName == "show") {
+                return true
+            }
+        }
+        return false
     }
 }

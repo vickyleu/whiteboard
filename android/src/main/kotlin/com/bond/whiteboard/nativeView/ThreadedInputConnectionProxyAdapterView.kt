@@ -4,12 +4,13 @@
 package com.bond.whiteboard.nativeView
 
 import android.graphics.Rect
+import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
-import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputConnection
+import android.view.inputmethod.*
 
 /**
  * A fake View only exposed to InputMethodManager.
@@ -60,7 +61,8 @@ internal class ThreadedInputConnectionProxyAdapterView(
             val inputConnection = if (isLocked) cachedConnection else targetView?.onCreateInputConnection(outAttrs)
             isTriggerDelayed = true
             cachedConnection = inputConnection
-            return inputConnection
+            var icc=inputConnection
+            return icc
         }else return null
     }
 

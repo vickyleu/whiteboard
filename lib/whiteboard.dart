@@ -83,7 +83,7 @@ class _WhiteboardState extends State<Whiteboard>{
   }
 
   Widget _androidView(Map<String, dynamic> creationParams, double width, double height) {
-     bool useHybridComposition=false;
+     bool useHybridComposition=widget.controller.isAndroidUseHybridComposition;
     Widget androidWidget;
     if (useHybridComposition) {
       androidWidget= PlatformViewLink(
@@ -259,6 +259,7 @@ class WhiteboardController {//extends Listener
   PigeonApi _api =  PigeonApi();
   WhiteboardController();
 
+  bool isAndroidUseHybridComposition=false;
   bool _joinComplete=false;
   Set<Function>_createdListener=Set();
   bool _isCreated=false;
