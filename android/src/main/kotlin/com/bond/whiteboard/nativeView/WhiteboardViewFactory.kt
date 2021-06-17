@@ -1,6 +1,7 @@
 package com.bond.whiteboard.nativeView
 
 import android.content.Context
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import io.flutter.plugin.platform.PlatformView
@@ -14,7 +15,8 @@ class WhiteboardViewFactory :
         if (nativeViewContainer == null) {
             nativeViewContainer = WhiteboardNativeView(context, viewId, args)
         } else {
-            nativeViewContainer?.update(viewId, args)
+            Log.e("createcreate","create")
+            nativeViewContainer!!.update(viewId, args)
         }
         return nativeViewContainer!!
     }
@@ -25,6 +27,8 @@ class WhiteboardViewFactory :
 
     override fun removeView(view: View) {
         nativeViewContainer?.rootView?.removeView(view)
+        Log.e("真的能移除吗???","$view")
+        nativeViewContainer?.rootView?.dispose()
     }
 
     override fun getApplicationContext(): Context? {

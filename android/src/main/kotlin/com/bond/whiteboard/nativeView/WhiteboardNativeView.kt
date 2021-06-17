@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.hardware.display.DisplayManager
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import io.flutter.plugin.platform.PlatformView
@@ -31,13 +32,11 @@ class WhiteboardNativeView(val context: Context, val viewId: Int, val args: Any?
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
         )
-
     }
 
     override fun getView(): View {
         return rootView
     }
-
     fun update(viewId: Int, args: Any?) {
         try {
             (rootView.parent as? ViewGroup)?.removeView(rootView)
@@ -55,9 +54,10 @@ class WhiteboardNativeView(val context: Context, val viewId: Int, val args: Any?
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
         )
-        rootView.requestLayout()
-        rootView.postInvalidate()
-        alloc()
+        rootView.post {
+            rootView.requestLayout()
+            alloc()
+        }
     }
 
     override fun dispose() {

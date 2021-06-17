@@ -128,13 +128,18 @@ class TICManagerImplM private constructor() : TICManager() {
 
     override fun quitClassroom(clearBoard: Boolean,callback: TICCallback<Any>){
         TXCLog.i(TAG, "TICManager: quitClassroom $clearBoard")
-        report(TICReporter.EventId.QUIT_GROUP_START)
-        //2、如果clearBoard= true, 清除board中所有的历史数据，下次进来时看到的都是全新白板
-        unitTEduBoard(clearBoard)
-        //停止同步时间
-        stopSyncTimer()
-        //
-        releaseClass()
+        try {
+            report(TICReporter.EventId.QUIT_GROUP_START)
+            //2、如果clearBoard= true, 清除board中所有的历史数据，下次进来时看到的都是全新白板
+            unitTEduBoard(clearBoard)
+            //停止同步时间
+            stopSyncTimer()
+            //
+            releaseClass()
+            callback.onSuccess("")
+        }catch (e:Exception){
+            callback.onError(MODULE_IMSDK, -1, "退出教室出错:${e.message}")
+        }
     }
 
 

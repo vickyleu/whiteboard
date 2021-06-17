@@ -96,14 +96,14 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
     fun quitClassroom() {
         boardAware?.destroy()
         isHaveImageBackground = false
+        removeBoardView()
         mTicManager.quitClassroom(true, object : TICCallback<Any> {
             override fun onSuccess(data: Any) {
-                removeBoardView()
+
             }
 
             override fun onError(module: String, errCode: Int, errMsg: String) {
                 Log.e("mother fucker", "退出白板失败:$errCode  $errMsg")
-                removeBoardView()
             }
         })
 //        rtcAware?.destroy()
@@ -136,7 +136,9 @@ class AwareManager : TICIMStatusListener, BoardAwareInterface {
     }
 
     override fun onTEBHistroyDataSyncCompleted() {
-        flutterApi?.historySyncCompleted {  }
+        flutterApi?.historySyncCompleted {
+
+        }
         val board = boardAware?.mBoard ?: return
         val currentBoard: String = board.currentBoard;
         val currentFile = board.currentFile

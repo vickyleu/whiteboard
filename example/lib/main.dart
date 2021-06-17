@@ -305,11 +305,9 @@ class _MyAppState extends State<MyApp> {
                         children: [
                           Positioned.fill(
                             child: Container(
-                              child: Focus(
-                                focusNode:widget._whiteboardController.focusNode,
-                                child: Whiteboard(
-                                  controller: widget._whiteboardController,
-                                ),autofocus: true,),
+                              child: Whiteboard(
+                                controller: widget._whiteboardController,
+                              ),
                               color: Colors.transparent,
                             ),
                           ),

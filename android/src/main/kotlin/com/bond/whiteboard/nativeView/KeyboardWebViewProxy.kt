@@ -2,16 +2,17 @@ package com.bond.whiteboard.nativeView
 
 import android.content.Context
 import android.content.Context.INPUT_METHOD_SERVICE
+import android.content.res.Configuration
 import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
-import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnFocusChangeListener
 import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import com.tencent.smtt.sdk.WebView
+
 
 
 class KeyboardWebViewProxy : FrameLayout {
@@ -34,7 +35,7 @@ class KeyboardWebViewProxy : FrameLayout {
 
 
     val focusChangeListener = OnFocusChangeListener { v,  hasFocus ->
-        if(v is WebView&&hasFocus){
+        if(v is WebView){
             for (i in 0 until v.childCount){
                 val vv=v.getChildAt(i)
                 Log.e(TAG,"OnFocusChangeListener ${vv.javaClass.simpleName}  ${hasFocus}")
@@ -46,6 +47,15 @@ class KeyboardWebViewProxy : FrameLayout {
         }
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration?) {
+        super.onConfigurationChanged(newConfig)
+        val orientation=newConfig?.orientation?:return
+        if(orientation==Configuration.ORIENTATION_PORTRAIT){
+            Log.e("onConfigurationChanged","旋转到垂直")
+        }else{
+            Log.e("onConfigurationChanged","旋转到横屏")
+        }
+    }
     private val TAG = "InputAwareWebView"
     private var threadedInputConnectionProxyView: View? = null
     private var proxyAdapterView: ThreadedInputConnectionProxyAdapterView? = null
@@ -57,6 +67,7 @@ class KeyboardWebViewProxy : FrameLayout {
 
     fun setContainerView(containerView: View?) {
         this.containerView = containerView
+        Log.w(TAG, "The containerView has changed.${containerView}")
         if (proxyAdapterView == null) {
             return
         }
@@ -89,6 +100,13 @@ class KeyboardWebViewProxy : FrameLayout {
 
     /** Restore the original InputConnection, if needed.  */
     fun dispose() {
+        if (hideKb()) return
+
+        proxyAdapterView?.dispose()
+//        clearFocus()
+        proxyAdapterView=null
+        threadedInputConnectionProxyView=null
+//        containerView?.requestFocus()
 //        resetInputConnection()
     }
 
@@ -206,38 +224,47 @@ class KeyboardWebViewProxy : FrameLayout {
 
     fun onTextFocusChange(focus: Boolean) {
         if(focus){
-            if (containerView == null) {
-                Log.e(
-                    TAG,
-                    "Can't set the input connection target because there is no containerView to use as a handler."
-                )
-                return
-            }
-            proxyAdapterView?.requestFocus()
-            containerView?.post {
-                val imm: InputMethodManager =
-                    context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                proxyAdapterView?.onWindowFocusChanged(true)
-                imm.isActive(containerView)
-            }
-//            lockInputConnection()
+            showKb()
         }else{
-            if (containerView == null) {
-                Log.e(
-                    TAG,
-                    "Can't set the input connection target because there is no containerView to use as a handler."
-                )
-                return
-            }
-            proxyAdapterView?.clearFocus()
-            containerView?.post {
-                val imm: InputMethodManager =
-                    context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                proxyAdapterView?.onWindowFocusChanged(false)
-                imm.hideSoftInputFromWindow(proxyAdapterView?.windowToken, 0);
-            }
-            unlockInputConnection()
+            hideKb()
         }
+    }
+
+    private fun showKb() {
+        if (containerView == null) {
+            Log.e(
+                TAG,
+                "Can't set the input connection target because there is no containerView to use as a handler."
+            )
+            return
+        }
+        proxyAdapterView?.requestFocus()
+        containerView?.post {
+            val imm: InputMethodManager =
+                context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            proxyAdapterView?.onWindowFocusChanged(true)
+            imm.isActive(containerView)
+        }
+        //            lockInputConnection()
+    }
+
+    private fun hideKb(): Boolean {
+        if (containerView == null) {
+            Log.e(
+                TAG,
+                "Can't set the input connection target because there is no containerView to use as a handler."
+            )
+            return true
+        }
+        proxyAdapterView?.clearFocus()
+        containerView?.post {
+            val imm: InputMethodManager =
+                context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            proxyAdapterView?.onWindowFocusChanged(false)
+                    imm.hideSoftInputFromWindow(proxyAdapterView?.windowToken, 0)
+        }
+        unlockInputConnection()
+        return false
     }
 
     fun onActiveFocus() {

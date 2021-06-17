@@ -28,12 +28,13 @@ import android.view.inputmethod.InputConnection
  */
 internal class ThreadedInputConnectionProxyAdapterView(
     val containerView: View,
-    val targetView: View,
-    val imeHandler: Handler?
+    var targetView: View?,
+    var imeHandler: Handler?
 ) : View(
     containerView.context
 ) {
-    val _windowToken: IBinder?
+    var _windowToken: IBinder?=null
+    var focused=true
     val _rootView: View
     /** Returns whether or not this is currently asynchronously acquiring an input connection.  */
     var isTriggerDelayed = true
@@ -53,22 +54,24 @@ internal class ThreadedInputConnectionProxyAdapterView(
      * Delegates to ThreadedInputConnectionProxyView to get WebView's input connection.
      */
     override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection? {
-        Log.e("onCreateInputConnection","$targetView  $isLocked")
-        isTriggerDelayed = false
-        val inputConnection = if (isLocked) cachedConnection else targetView.onCreateInputConnection(outAttrs)
-        isTriggerDelayed = true
-        cachedConnection = inputConnection
-        return inputConnection
+        if(focused){
+            Log.e("onCreateInputConnection","$targetView  $isLocked")
+            isTriggerDelayed = false
+            val inputConnection = if (isLocked) cachedConnection else targetView?.onCreateInputConnection(outAttrs)
+            isTriggerDelayed = true
+            cachedConnection = inputConnection
+            return inputConnection
+        }else return null
     }
 
     override fun checkInputConnectionProxy(view: View): Boolean {
-        return true
+        return focused
     }
 
     override fun hasWindowFocus(): Boolean {
         // None of our views here correctly report they have window focus because of how we're embedding
         // the platform view inside of a virtual display.
-        return true
+        return focused
     }
 
     override fun getRootView(): View {
@@ -80,7 +83,7 @@ internal class ThreadedInputConnectionProxyAdapterView(
     }
 
     override fun isFocused(): Boolean {
-        return true
+        return focused
     }
 
     override fun getWindowToken(): IBinder? {
@@ -89,6 +92,14 @@ internal class ThreadedInputConnectionProxyAdapterView(
 
     override fun getHandler(): Handler? {
         return imeHandler
+    }
+    fun dispose(){
+        _windowToken=null
+        cachedConnection=null
+        targetView=null
+        imeHandler=null
+        isFocusable = false
+        focused=false
     }
 
     init {
