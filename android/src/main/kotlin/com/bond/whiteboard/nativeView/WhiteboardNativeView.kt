@@ -38,6 +38,7 @@ class WhiteboardNativeView(val context: Context, val viewId: Int, val args: Any?
         return rootView
     }
     fun update(viewId: Int, args: Any?) {
+        Log.e("updateupdate","update")
         try {
             (rootView.parent as? ViewGroup)?.removeView(rootView)
         }catch (e:Exception){}
@@ -72,6 +73,7 @@ class WhiteboardNativeView(val context: Context, val viewId: Int, val args: Any?
 
     fun dealloc() {
         rootView.clearFocus()
+        rootView.removeAllViews()
     }
 
 

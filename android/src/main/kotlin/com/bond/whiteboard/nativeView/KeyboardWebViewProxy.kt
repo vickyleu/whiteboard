@@ -1,5 +1,6 @@
 package com.bond.whiteboard.nativeView
 
+import android.app.ActivityManager
 import android.content.Context
 import android.content.Context.INPUT_METHOD_SERVICE
 import android.content.res.Configuration
@@ -9,14 +10,13 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.View
 import android.view.View.OnFocusChangeListener
-import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import android.widget.ListPopupWindow
 import androidx.annotation.RequiresApi
 import com.tencent.smtt.sdk.WebView
-
+import io.flutter.app.FlutterApplication
 
 
 class KeyboardWebViewProxy : FrameLayout {
@@ -38,18 +38,18 @@ class KeyboardWebViewProxy : FrameLayout {
     ) : super(context, attrs, defStyleAttr, defStyleRes)
 
 
-    val focusChangeListener = OnFocusChangeListener { v,  hasFocus ->
-        if(v is WebView){
-            for (i in 0 until v.childCount){
-                val vv=v.getChildAt(i)
-                if(vv.javaClass.simpleName.contains("InnerWebView")||vv.javaClass.superclass.simpleName=="WebView"){
-                    if (vv.onCreateInputConnection(EditorInfo().also {
-                        it.imeOptions=EditorInfo.IME_ACTION_NEXT
-                        })!=null){
-                        Log.e(TAG,"OnFocusChangeListener ${vv.javaClass.simpleName} ${vv.javaClass.superclass.canonicalName} ${hasFocus}")
-                        vv.requestFocus()
-                        checkInputConnectionProxy(vv)
-                    }
+    val focusChangeListener = OnFocusChangeListener { v, hasFocus ->
+        if (v is WebView) {
+            for (i in 0 until v.childCount) {
+                val vv = v.getChildAt(i)
+                if (vv.javaClass.simpleName.contains("InnerWebView") ||
+                    vv.javaClass.superclass.canonicalName == "android.webkit.WebView") {
+                    Log.e(
+                        TAG,
+                        "OnFocusChangeListener ${vv.javaClass.simpleName} ${vv.javaClass.superclass.canonicalName} ${hasFocus}"
+                    )
+                    vv.requestFocus()
+                    checkInputConnectionProxy(vv)
                     return@OnFocusChangeListener
                 }
             }
@@ -58,13 +58,14 @@ class KeyboardWebViewProxy : FrameLayout {
 
     override fun onConfigurationChanged(newConfig: Configuration?) {
         super.onConfigurationChanged(newConfig)
-        val orientation=newConfig?.orientation?:return
-        if(orientation==Configuration.ORIENTATION_PORTRAIT){
-            Log.e("onConfigurationChanged","旋转到垂直")
-        }else{
-            Log.e("onConfigurationChanged","旋转到横屏")
+        val orientation = newConfig?.orientation ?: return
+        if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+            Log.e("onConfigurationChanged", "旋转到垂直")
+        } else {
+            Log.e("onConfigurationChanged", "旋转到横屏")
         }
     }
+
     private val TAG = "InputAwareWebView"
     private var threadedInputConnectionProxyView: View? = null
     private var proxyAdapterView: ThreadedInputConnectionProxyAdapterView? = null
@@ -109,12 +110,11 @@ class KeyboardWebViewProxy : FrameLayout {
 
     /** Restore the original InputConnection, if needed.  */
     fun dispose() {
-        if (hideKb()) return
-
+        hideKb()
         proxyAdapterView?.dispose()
 //        clearFocus()
-        proxyAdapterView=null
-        threadedInputConnectionProxyView=null
+        proxyAdapterView = null
+        threadedInputConnectionProxyView = null
 //        containerView?.requestFocus()
 //        resetInputConnection()
     }
@@ -156,8 +156,8 @@ class KeyboardWebViewProxy : FrameLayout {
         // We've never seen this before, so we make the assumption that this is WebView's
         // ThreadedInputConnectionProxyView. We are making the assumption that the only view that could
         // possibly be interacting with the IMM here is WebView's ThreadedInputConnectionProxyView.
-        if(view.handler==null) return super.checkInputConnectionProxy(view)
-        Log.e("viewviewview","${view.javaClass.simpleName}")
+        if (view.handler == null) return super.checkInputConnectionProxy(view)
+        Log.e("viewviewview", "${view.javaClass.simpleName}")
         proxyAdapterView = ThreadedInputConnectionProxyAdapterView( /*containerView=*/
             containerView!!,  /*targetView=*/
             view,  /*imeHandler=*/
@@ -227,21 +227,24 @@ class KeyboardWebViewProxy : FrameLayout {
                 context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             targetView?.onWindowFocusChanged(true)
             try {
-                val value=imm.isActive(containerView)
-                if(!value){
-                    imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
+                val value = imm.isActive(containerView)
+                if (!value) {
+                    imm.toggleSoftInput(
+                        InputMethodManager.SHOW_FORCED,
+                        InputMethodManager.HIDE_IMPLICIT_ONLY
+                    )
                 }
-                Log.e("激活","$containerView")
-            }catch (e:Exception){
-                Log.e("Exception","${e.message}")
+                Log.e("激活", "$containerView")
+            } catch (e: Exception) {
+                Log.e("Exception", "${e.message}")
             }
         }
     }
 
     fun onTextFocusChange(focus: Boolean) {
-        if(focus){
+        if (focus) {
             showKb()
-        }else{
+        } else {
             hideKb()
         }
     }
@@ -260,43 +263,49 @@ class KeyboardWebViewProxy : FrameLayout {
                 context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             proxyAdapterView?.onWindowFocusChanged(true)
             try {
-                val value=imm.isActive(containerView)
-                if(!value){
-                    imm.toggleSoftInputFromWindow(containerView?.windowToken,InputMethodManager.SHOW_IMPLICIT, InputMethodManager.HIDE_IMPLICIT_ONLY);
-//                    imm.toggleSoftInputFromWindow(proxyAdapterView?.windowToken,InputMethodManager.SHOW_IMPLICIT, InputMethodManager.HIDE_IMPLICIT_ONLY);
-//                    imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
+                val value = imm.isActive(containerView)
+                if (!value) {
+                    val appContext = context.applicationContext
+
+                    if (appContext is FlutterApplication) {
+                        val currentActivity = appContext.currentActivity
+                        Log.e("currentActivity","${currentActivity}")
+                        if (currentActivity != null) {
+                            Log.e("currentActivity","${currentActivity.javaClass.simpleName}")
+                            imm.showSoftInputFromInputMethod(currentActivity.window.decorView.windowToken,0)
+                        }
+                    }
                 }
-            }catch (e:Exception){
-                Log.e("Exception","${e.message}")
+            } catch (e: Exception) {
+                Log.e("Exception", "${e.message}")
             }
         }
         //            lockInputConnection()
     }
 
-    private fun hideKb(): Boolean {
+    private fun hideKb() {
         if (containerView == null) {
             Log.e(
                 TAG,
                 "Can't set the input connection target because there is no containerView to use as a handler."
             )
-            return true
+            return
         }
         proxyAdapterView?.clearFocus()
         containerView?.post {
             val imm: InputMethodManager =
                 context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             proxyAdapterView?.onWindowFocusChanged(false)
-                    imm.hideSoftInputFromWindow(proxyAdapterView?.windowToken, 0)
+            val value = imm.hideSoftInputFromWindow(proxyAdapterView?.windowToken, 0)
         }
         unlockInputConnection()
-        return false
     }
 
     fun onActiveFocus() {
         val rootview = this.rootView
         val view = rootview.findFocus()
-        if(view!=null&&view is WebView){
-            view.onFocusChangeListener?.onFocusChange(view,true)
+        if (view != null && view is WebView) {
+            view.onFocusChangeListener?.onFocusChange(view, true)
             view.view.requestFocus()
         }
     }
